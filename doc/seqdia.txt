@@ -1,0 +1,74 @@
+title Entity creation
+
+note over User, Engine: Facade
+
+User->+Engine: create entity
+Engine->+EntityManager: create entity
+
+EntityManager->EntityManager: pick next entity id
+EntityManager->EntityManager: get entity from pool
+EntityManager-->-Engine: entity
+
+Engine->+EntityProcessor: entity created
+
+EntityProcessor->+EntityAddition: <<new>>(entity)
+EntityAddition-->-EntityProcessor: entityEdit
+
+EntityProcessor-->-EntityProcessor: store
+Engine-->-User: entity
+
+
+
+
+
+
+
+
+title Entity deletion (game logic step)
+
+note over User, Engine: Facade
+
+User->+Engine: remove entity
+Engine->+EntityProcessor: entity removed 
+
+EntityProcessor->+EntityDeletion: <<new>>(entity)
+EntityDeletion-->-EntityProcessor: entityEdit
+
+EntityProcessor-->-EntityProcessor: store
+
+
+
+
+
+title Component addition (game logic step)
+
+note over User, Engine: Facade
+
+User->+Engine: add component
+Engine->+EntityProcessor: entity component added
+
+EntityProcessor->+EntityComponentAddition: <<new>>(entity)
+EntityComponentAddition-->-EntityProcessor: entityEdit
+
+EntityProcessor-->-EntityProcessor: store
+
+Engine-->-User: component
+
+
+
+
+
+
+title Component deletion (game logic step)
+
+note over User, Engine: Facade
+
+User->+Engine: remove component
+Engine->+EntityProcessor: entity component removed
+
+EntityProcessor->+EntityComponentDeletion: <<new>>(entity)
+EntityComponentDeletion-->-EntityProcessor: entityEdit
+
+EntityProcessor-->-EntityProcessor: store
+
+
