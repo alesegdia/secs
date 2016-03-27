@@ -6,8 +6,9 @@
 2. [Entity Component Systems](#2-entity-component-systems)
 3. [Goals](#3-goals)
 4. [Non-goals](#4-non-goals)
-5. [System detail](#5-system-detail)
+5. [Framework detail](#5-framework-detail)
   1. [Life cycle](#5-1-life-cycle)
+  2. [Entity operations](#5-2-entity-operations)
 
 ---
 
