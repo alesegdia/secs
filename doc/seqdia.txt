@@ -19,11 +19,7 @@ Engine-->-User: entity
 
 
 
-
-
-
-
-
+#########################################################################################################
 title Entity deletion (game logic step)
 
 note over User, Engine: Facade
@@ -38,8 +34,7 @@ EntityProcessor-->-EntityProcessor: store
 
 
 
-
-
+#########################################################################################################
 title Component addition (game logic step)
 
 note over User, Engine: Facade
@@ -56,9 +51,35 @@ Engine-->-User: component
 
 
 
+#########################################################################################################
+title Processing addition component edits (post game logic step)
+
+Engine->+EntityProcessor: get added component edits
+EntityProcessor-->-Engine:
+
+note over Engine, EntityProcessor,EntityManager,EntitySubscription,SubscriptionListener: the component was created in the game logic step, so only notification and bits update are needed
+
+loop foreach component addition edits
+
+    Engine->+EntityManager: add component bit to entity
+    EntityManager-->-Engine:
+
+    loop foreach entity subscription
+        opt if entity subscription accepts entity
+            Engine->+EntitySubscription: notify entity addition
+            EntitySubscription->EntitySubscription: add entity to list
+            loop foreach listener
+                EntitySubscription->+SubscriptionListener: notify entity addition
+                SubscriptionListener-->-EntitySubscription:
+            end
+            EntitySubscription-->-Engine:
+        end
+    end
+end
 
 
 
+#########################################################################################################
 title Component deletion (game logic step)
 
 note over User, Engine: Facade
@@ -70,5 +91,33 @@ EntityProcessor->+EntityComponentDeletion: <<new>>(entity)
 EntityComponentDeletion-->-EntityProcessor: entityEdit
 
 EntityProcessor-->-EntityProcessor: store
+
+
+
+#########################################################################################################
+title Processing remove component edits (post game logic step)
+
+Engine->+EntityProcessor: get remove component edits
+EntityProcessor-->-Engine:
+
+loop foreach component deletion edits
+    Engine->+ComponentManager: remove component from entity
+    ComponentManager->ComponentManager: free the component from the pool
+    ComponentManager-->-Engine:
+
+    loop foreach entity subscription
+        opt if entity subscription accepts entity
+            Engine->+EntitySubscription: notify entity deletion
+            loop foreach listener
+                EntitySubscription->+SubscriptionListener: notify entity deletion
+                SubscriptionListener-->-EntitySubscription:
+            end
+            EntitySubscription-->-Engine:
+        end
+    end
+    Engine->+EntityManager: remove component bit from entity
+    EntityManager-->-Engine:
+end
+
 
 
