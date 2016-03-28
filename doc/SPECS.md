@@ -91,10 +91,16 @@ An example to illustrate this is a shooting system which purpose is to spawn bul
 ![entop-compadd-step](entop-compadd-step.png "Component addition to entity")
 </center>
 
-
+<center>
+![entop-compadd-process](entop-compadd-process.png "Component addition to entity")
+</center>
 
 #### Component deletion from entity
 
 <center>
 ![entop-compdel-step](entop-compdel-step.png "Component deletion from entity")
+</center>
+
+<center>
+![entop-compdel-process](entop-compdel-process.png "Component deletion from entity")
 </center>
