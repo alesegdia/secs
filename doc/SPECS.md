@@ -49,9 +49,7 @@ Note that I will use framework instead of system when referring to the ECS frame
 
 ### 5.1. Life cycle
 
-The framework will need the systems to be created and inserted at start. Then, in the game loop, these systems will perform the game logic.
-
-Some entity related operations can be requested inside it. These operations won't be performed right away, but instead the framework will wait for all the systems to end, and then, perform all entity operations and notify systems when applicable.
+The framework will need the systems to be created and inserted at start. Then, in the game loop, these systems will perform the game logic. Some entity related operations can be requested inside it.
 
 <center>
 ![lifecycle](lifecycle.png "Framework life cycle")
@@ -65,11 +63,6 @@ So the available entity operations are the following:
 * Delete an entity
 * Add component to an entity
 * Remove component from an entity
-
-During the game step, entity operations will be annotated but not performed, since it's safer to delay all entity operations after every system performed its step, avoiding possible bugs depending on the order in which systems are run. There is one exception to the delay of an operation: entity creation. This is because an entity is just a number. If no components are added, the entity won't impact nothing. Besides from that, the addition operation will be annotated as well.
-
-An example to illustrate this is a shooting system which purpose is to spawn bullets. This system would trigger bullet spawn when a entity sets a flag `wantShoot` in an hypothetical `ShootComponent`. The bullet entity will be created, but components won't be added until the end of the game loop where the bullet is spawn, so it will be like if the bullet didn't even exist.
-
 
 #### Entity creation
 
