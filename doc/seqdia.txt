@@ -9,12 +9,6 @@ EntityManager->EntityManager: pick next entity id
 EntityManager->EntityManager: get entity from pool
 EntityManager-->-Engine: entity
 
-Engine->+EntityProcessor: entity created
-
-EntityProcessor->+EntityAddition: <<new>>(entity)
-EntityAddition-->-EntityProcessor: entityEdit
-
-EntityProcessor-->-EntityProcessor: store
 Engine-->-User: entity
 
 
@@ -22,16 +16,15 @@ Engine-->-User: entity
 #########################################################################################################
 title Entity deletion (game logic step)
 
+title Entity deletion
+
 note over User, Engine: Facade
 
 User->+Engine: remove entity
-Engine->+EntityProcessor: entity removed 
 
-EntityProcessor->+EntityDeletion: <<new>>(entity)
-EntityDeletion-->-EntityProcessor: entityEdit
+Engine->+EntityProcessor: remove entity
 
-EntityProcessor-->-EntityProcessor: store
-
+EntityProcessor-->EntityProcessor: annotate entity for removal
 
 
 #########################################################################################################
@@ -52,34 +45,6 @@ Engine-->-User: component
 
 
 #########################################################################################################
-title Processing addition component edits (post game logic step)
-
-Engine->+EntityProcessor: get added component edits
-EntityProcessor-->-Engine:
-
-note over Engine, EntityProcessor,EntityManager,EntitySubscription,SubscriptionListener: the component was created in the game logic step, so only notification and bits update are needed
-
-loop foreach component addition edits
-
-    Engine->+EntityManager: add component bit to entity
-    EntityManager-->-Engine:
-
-    loop foreach entity subscription
-        opt if entity subscription accepts entity
-            Engine->+EntitySubscription: notify entity addition
-            EntitySubscription->EntitySubscription: add entity to list
-            loop foreach listener
-                EntitySubscription->+SubscriptionListener: notify entity addition
-                SubscriptionListener-->-EntitySubscription:
-            end
-            EntitySubscription-->-Engine:
-        end
-    end
-end
-
-
-
-#########################################################################################################
 title Component deletion (game logic step)
 
 note over User, Engine: Facade
@@ -95,29 +60,55 @@ EntityProcessor-->-EntityProcessor: store
 
 
 #########################################################################################################
-title Processing remove component edits (post game logic step)
+title Entity edit processing
+Engine->+EntityProcessor: process ECS entity edits
 
-Engine->+EntityProcessor: get remove component edits
-EntityProcessor-->-Engine:
+note over Engine, EntityProcessor, ComponentManager, System: full component addition (creation and bits update)
 
-loop foreach component deletion edits
-    Engine->+ComponentManager: remove component from entity
-    ComponentManager->ComponentManager: free the component from the pool
-    ComponentManager-->-Engine:
+loop foreach component addition edit
+    EntityProcessor->+ComponentManager: add component to entity
+    ComponentManager-->-EntityProcessor:
 
-    loop foreach entity subscription
-        opt if entity subscription accepts entity
-            Engine->+EntitySubscription: notify entity deletion
-            loop foreach listener
-                EntitySubscription->+SubscriptionListener: notify entity deletion
-                SubscriptionListener-->-EntitySubscription:
-            end
-            EntitySubscription-->-Engine:
-        end
-    end
-    Engine->+EntityManager: remove component bit from entity
-    EntityManager-->-Engine:
+    EntityProcessor->+ComponentManager: set component bit to entity
+    ComponentManager-->-EntityProcessor:
+
+    EntityProcessor-->EntityProcessor: add entity to change set
 end
 
 
+note over Engine, EntityProcessor, ComponentManager, System: partial component removal (only bits update)
 
+loop foreach component removal edit
+    EntityProcessor->+ComponentManager: clear component bit from entity
+    ComponentManager-->-EntityProcessor:
+
+    EntityProcessor-->EntityProcessor: add entity to change set
+end
+
+note over Engine, EntityProcessor, ComponentManager, System: system notifications
+
+loop foreach system in systems
+
+    EntityProcessor->+System: set of entities changed
+    System-->-EntityProcessor:
+
+    EntityProcessor->+System: set of entities added
+    System-->-EntityProcessor:
+
+    EntityProcessor->+System: set of entities removed
+    System-->-EntityProcessor:
+
+end
+
+note over Engine, EntityProcessor, ComponentManager, System: actual component removal
+loop foreach component removal edit
+    EntityProcessor->+ComponentManager: remove component from entity
+    ComponentManager-->-EntityProcessor:
+end
+
+loop foreach entity removal edit
+    EntityProcessor->+ComponentManager: remove all components
+    ComponentManager-->-EntityProcessor:
+end
+
+EntityProcessor-->-Engine:
