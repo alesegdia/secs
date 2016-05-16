@@ -9,6 +9,13 @@ EntityManager->EntityManager: pick next entity id
 EntityManager->EntityManager: get entity from pool
 EntityManager-->-Engine: entity
 
+Engine->+EntityProcessor: entity created
+
+EntityProcessor->+EntityAddition: <<new>>(entity)
+EntityAddition-->-EntityProcessor: entityEdit
+
+EntityProcessor-->-EntityProcessor: store
+
 Engine-->-User: entity
 
 
