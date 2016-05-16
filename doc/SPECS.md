@@ -60,7 +60,7 @@ Some entity related operations can be requested inside it. These operations won'
 
 ### 5.2. System notification
 
-Systems will have a bitset to keep track of which entities are present in it, and which not. Also, each system will have of the processed entities. Systems will be notified about the following operations:
+Systems will have a bitset to query which entities are present in the system and which not quickly. Also, each system will keep track of the processed entities. Systems will be notified about the following operations:
 
 * Entity addition: if the system accepts the entity, the system will mark it as active in the entity bitset, and add it to the processing list.
 
@@ -116,3 +116,7 @@ An example to illustrate this is a shooting system which purpose is to spawn bul
 </center>
 
 #### Entity processor
+
+<center>
+![entop-compdel-step](entop-processing.png "Entity edit processing")
+</center>
