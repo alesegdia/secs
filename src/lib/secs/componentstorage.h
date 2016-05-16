@@ -45,11 +45,11 @@ public:
 	 */
 	ComponentType& allocComponent( const Entity& e )
 	{
-		if( m_storage.size() < e.getID() )
+		if( m_storage.size() < e.eid() )
 		{
-			m_storage.resize(e.getID());
+			m_storage.resize(e.eid());
 		}
-		return m_storage[e.getID()];
+		return m_storage[e.eid()];
 	}
 
 	/**
@@ -58,7 +58,7 @@ public:
 	 */
 	void setComponent( const Entity& e )
 	{
-		m_ownerEntities.set(e.getID(), true);
+		m_ownerEntities.set(e.eid(), true);
 	}
 
 	/**
@@ -67,9 +67,9 @@ public:
 	 */
 	void freeComponent( const Entity& e )
 	{
-		assert( e.getID() < m_storage.size() );
-		assert( true == m_ownerEntities.test( e.getID() ) );
-		m_storage[ e.getID() ] = {};
+		assert( e.eid() < m_storage.size() );
+		assert( true == m_ownerEntities.test( e.eid() ) );
+		m_storage[ e.eid() ] = {};
 	}
 
 	/**
@@ -78,7 +78,7 @@ public:
 	 */
 	void unsetComponent( const Entity& e )
 	{
-		m_ownerEntities.set(e.getID(), false);
+		m_ownerEntities.set(e.eid(), false);
 	}
 
 private:

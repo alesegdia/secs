@@ -12,23 +12,23 @@ public:
 	typedef std::uint64_t eid_t;
 
 	Entity( eid_t id )
-		: m_id(id)
+		: m_eid(id)
 	{
 
 	}
 
-	eid_t getID() const
+	eid_t eid() const
 	{
-		return m_id;
+		return m_eid;
 	}
 
 	bool operator==(const Entity& other)
 	{
-		return m_id == other.getID();
+		return m_eid == other.eid();
 	}
 
 private:
-	eid_t m_id;
+	eid_t m_eid;
 
 };
 
