@@ -91,12 +91,16 @@ An example to illustrate this is a shooting system which purpose is to spawn bul
 
 #### Entity creation
 
+When an entity is created, a free ID from a pool is attached to it. The operation is annotated so that we can notify systems later.
+
 <center>
 ![entop-creation](entop-creation.png "Entity creation")
 </center>
 
 
 #### Entity deletion
+
+When an entity is removed, the operation is just annotated and nothing is done. Instead, the removal of all components and the entity itself will be done at the edit processing step later. This is because systems may need to perform some operations on these entities on removal. As an example, a PhysicSystem might want to remove the body from the physics world.
 
 <center>
 ![entop-deletion-step](entop-deletion-step.png "Entity destruction")
@@ -105,17 +109,31 @@ An example to illustrate this is a shooting system which purpose is to spawn bul
 
 #### Component addition to entity
 
+When a component is added to an entity, the component is actually allocated and passed back to the user, so that the user can modify it. The bits are not updated here, but delayed to the entity edit processing step.
+
+**NOTE:** this could be changed, since there might be no reason for not updating entity bits here. The systems notification will still need to wait for the entity edit processing step.
+
 <center>
 ![entop-compadd-step](entop-compadd-step.png "Component addition to entity")
 </center>
 
 #### Component deletion from entity
 
+When an component is removed from an entity in the system loop, nothing is done really. Instead, the operation is annotated and delayed back to the entity edit processing step, in order to correctly notify systems.
+
 <center>
 ![entop-compdel-step](entop-compdel-step.png "Component deletion from entity")
 </center>
 
 #### Entity processor
+
+This is a key step, since here we will complete operations partially done in the systems loop as well as notify systems. A set of **changed** entities will be created and filled with the entities over which we made some component addition or removal operation. 
+
+Component additions will be performed completly at first, since they does not affect anything.
+
+Component removal will be done partially so that only entity bits will be updated. The reason behind this (stated earlier) is that there might be systems that could need to perform some operation on entity removal.
+
+Then, all systems will be notified about changed, added and removed entities, and finally, components will be freed.
 
 <center>
 ![entop-compdel-step](entop-processing.png "Entity edit processing")
