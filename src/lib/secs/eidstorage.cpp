@@ -16,6 +16,7 @@ eid_t EIDStorage::retrieve()
 	{
 		eid = m_lastEID++;
 	}
+	return eid;
 }
 
 void EIDStorage::recycle( Entity entity )
