@@ -11,21 +11,11 @@ class Entity {
 public:
 	typedef std::uint64_t eid_t;
 
-	Entity( eid_t id )
-		: m_eid(id)
-	{
+	Entity( eid_t id );
 
-	}
+	eid_t eid() const;
 
-	eid_t eid() const
-	{
-		return m_eid;
-	}
-
-	bool operator==(const Entity& other)
-	{
-		return m_eid == other.eid();
-	}
+	bool operator==(const Entity& other);
 
 private:
 	eid_t m_eid;
