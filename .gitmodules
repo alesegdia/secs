@@ -1,0 +1,3 @@
+[submodule "module/xstf"]
+	path = module/xstf
+	url = git@github.com:alesegdia/xstf.git
