@@ -24,4 +24,19 @@ void EIDStorage::recycle( Entity entity )
 	m_recycledEIDs.push( entity.eid() );
 }
 
+eid_t EIDStorage::lastEID() const
+{
+	return m_lastEID;
+}
+
+size_t EIDStorage::numRecycled() const
+{
+	return m_recycledEIDs.size();
+}
+
+const std::stack<eid_t> &EIDStorage::recycledStack() const
+{
+	return m_recycledEIDs;
+}
+
 }
