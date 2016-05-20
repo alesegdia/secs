@@ -47,11 +47,24 @@ private:
 
 };
 
+/**
+ * @brief The EntityProcessor object is the responsible of creating/removing entities and components.
+ * The user must access this object in order to make any entity changes.
+ */
 class EntityProcessor
 {
 public:
 
+	friend class Engine;
+
 	typedef EntityProcessor* Ptr;
+
+	EntityProcessor( SystemManager& system_manager, ComponentManager& component_manager )
+		: m_systemManager(system_manager),
+		  m_componentManager(component_manager)
+	{
+
+	}
 
 	template <typename ComponentType>
 	ComponentType& addComponent( const Entity& entity )
@@ -81,6 +94,8 @@ public:
 		m_addedEntities.push_back( entity );
 		return entity;
 	}
+
+private:
 
 	void applyChanges()
 	{
@@ -119,10 +134,8 @@ public:
 		m_removedEntities.clear();
 	}
 
-private:
-
-	ComponentManager m_componentManager;
-	SystemManager m_systemManager;
+	SystemManager& m_systemManager;
+	ComponentManager& m_componentManager;
 
 	std::vector<Entity> m_addedEntities;
 	std::vector<Entity> m_removedEntities;
