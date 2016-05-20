@@ -21,6 +21,8 @@ public:
 
 	}
 
+	virtual EntityBits& ownerEntityBits() = 0 ;
+
 };
 
 template <typename ComponentType>
@@ -32,6 +34,8 @@ template <typename ComponentType>
 class ComponentStorage : public BaseComponentStorage
 {
 public:
+
+	friend class EntityProcessor;
 
 	using UniquePtr = std::unique_ptr<ComponentStorage<ComponentType>>;
 	using SharedPtr = std::shared_ptr<ComponentStorage>;
@@ -81,7 +85,19 @@ public:
 		m_ownerEntities.set(e.eid(), false);
 	}
 
+	ComponentType& component( Entity& e )
+	{
+		assert( m_ownerEntities.test(e.eid())
+				&& "Must be used in this component storage." );
+		return m_storage[e.eid()];
+	}
+
 private:
+
+	EntityBits& ownerEntityBits()
+	{
+		return m_ownerEntities;
+	}
 
 	/**
 	 * @brief m_storage number of ComponentType. The container is resized when a ComponentType is
