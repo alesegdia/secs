@@ -45,6 +45,14 @@ public:
 		m_systems.push_back( system );
 	}
 
+	void step()
+	{
+		for( auto system : m_systems )
+		{
+			system->step();
+		}
+	}
+
 private:
 	std::vector<System::Ptr> m_systems;
 
