@@ -14,6 +14,8 @@ class EntitySystem : public System, public EntityObserver
 {
 public:
 
+	typedef EntitySystem* Ptr;
+
 	~EntitySystem() = 0;
 
 	// EntityObserver interface
@@ -28,7 +30,6 @@ public:
 	virtual void onAdded( const Entity& e ) = 0 ;
 	virtual void onRemoved( const Entity& e ) = 0 ;
 	virtual void process( const Entity& e ) = 0 ;
-
 
 	// System interface
 	virtual void step() final;
