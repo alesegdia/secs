@@ -22,6 +22,8 @@ public:
 	}
 
 	virtual EntityBits& ownerEntityBits() = 0 ;
+	virtual void unsetComponent( const Entity& e ) = 0 ;
+	virtual void setComponent( const Entity& e ) = 0 ;
 
 };
 
@@ -34,8 +36,6 @@ template <typename ComponentType>
 class ComponentStorage : public BaseComponentStorage
 {
 public:
-
-	friend class EntityProcessor;
 
 	using UniquePtr = std::unique_ptr<ComponentStorage<ComponentType>>;
 	using SharedPtr = std::shared_ptr<ComponentStorage>;
@@ -60,7 +60,7 @@ public:
 	 * @brief sets the entity bit for ComponentType
 	 * @param e
 	 */
-	void setComponent( const Entity& e )
+	void setComponent( const Entity& e ) override
 	{
 		m_ownerEntities.set(e.eid(), true);
 	}
@@ -80,7 +80,7 @@ public:
 	 * @brief clears the entity bit for ComponentType
 	 * @param e
 	 */
-	void unsetComponent( const Entity& e )
+	void unsetComponent( const Entity& e ) override
 	{
 		m_ownerEntities.set(e.eid(), false);
 	}
@@ -92,12 +92,12 @@ public:
 		return m_storage[e.eid()];
 	}
 
-private:
-
-	EntityBits& ownerEntityBits()
+	bool hasComponent( const Entity& entity )
 	{
-		return m_ownerEntities;
+		return m_ownerEntities.test( entity.eid() );
 	}
+
+private:
 
 	/**
 	 * @brief m_storage number of ComponentType. The container is resized when a ComponentType is
