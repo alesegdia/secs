@@ -3,6 +3,7 @@
 #include "entity.h"
 #include "componentmanager.h"
 #include "entitymanager.h"
+#include "systemmanager.h"
 
 namespace secs
 {
@@ -84,7 +85,7 @@ public:
 private:
 	ComponentManager m_componentManager;
 	EntityManager m_entityManager;
-	SystemManager m_
+	SystemManager m_systemManager;
 
 	std::vector<Entity> m_addedEntities;
 	std::vector<Entity> m_removedEntities;
