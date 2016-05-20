@@ -16,20 +16,11 @@ public:
 	void recycle( Entity entity );
 
 	// for testing purposes
-	eid_t lastEID() const
-	{
-		return m_lastEID;
-	}
+	eid_t lastEID() const;
 
-	size_t numRecycled() const
-	{
-		return m_recycledEIDs.size();
-	}
+	size_t numRecycled() const;
 
-	const std::stack<eid_t>& recycledStack() const
-	{
-		return m_recycledEIDs;
-	}
+	const std::stack<eid_t>& recycledStack() const;
 
 private:
 	std::stack<eid_t> m_recycledEIDs;
