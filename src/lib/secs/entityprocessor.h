@@ -6,6 +6,7 @@
 #include "componentmanager.h"
 #include "eidstorage.h"
 #include "systemmanager.h"
+#include "componentflagsmanager.h"
 
 namespace secs
 {
@@ -19,8 +20,8 @@ public:
 		AddComponent
 	};
 
-	ComponentEdit( const Entity& entity, Type type, BaseComponentStorage::Ptr storage )
-		: m_entity(entity), m_type(type), m_storage(storage)
+	ComponentEdit( const Entity& entity, Type type, ctindex_t index )
+		: m_entity(entity), m_type(type), m_index(index)
 	{
 
 	}
@@ -30,12 +31,12 @@ public:
 		return m_type;
 	}
 
-	BaseComponentStorage::Ptr storage()
+	ctindex_t index()
 	{
-		return m_storage;
+		return m_index;
 	}
 
-	Entity entity()
+	const Entity& entity()
 	{
 		return m_entity;
 	}
@@ -43,7 +44,7 @@ public:
 private:
 	Entity m_entity;
 	Type m_type;
-	BaseComponentStorage::Ptr m_storage;
+	ctindex_t m_index;
 
 };
 
@@ -59,9 +60,10 @@ public:
 
 	typedef EntityProcessor* Ptr;
 
-	EntityProcessor( SystemManager& system_manager, ComponentManager& component_manager )
+	EntityProcessor( SystemManager& system_manager, ComponentManager& component_manager, ComponentFlagsManager& component_flags_manager )
 		: m_systemManager(system_manager),
-		  m_componentManager(component_manager)
+		  m_componentManager(component_manager),
+		  m_componentFlagsManager(component_flags_manager)
 	{
 
 	}
@@ -69,8 +71,9 @@ public:
 	template <typename ComponentType>
 	ComponentType& addComponent( const Entity& entity )
 	{
+		m_componentFlagsManager.componentFlags( entity );
 		auto storage = m_componentManager.componentStorage<ComponentType>();
-		m_componentEdits.push_back( ComponentEdit( entity, ComponentEdit::Type::AddComponent, storage.data() ));
+		m_componentEdits.push_back( ComponentEdit( entity, ComponentEdit::Type::AddComponent, ComponentTraits::getIndex<ComponentType>() ));
 		storage->component( entity ) = {};
 		return storage->component( entity );
 	}
@@ -79,7 +82,7 @@ public:
 	void removeComponent( const Entity& entity )
 	{
 		auto storage = m_componentManager.componentStorage<ComponentType>();
-		m_componentEdits.push_back( ComponentEdit( entity, ComponentEdit::Type::RemoveComponent, storage.data() ));
+		m_componentEdits.push_back( ComponentEdit( entity, ComponentEdit::Type::RemoveComponent, ComponentTraits::getIndex<ComponentType>() ));
 		return storage->component( entity );
 	}
 
@@ -106,10 +109,10 @@ private:
 			switch( edit.type() )
 			{
 			case ComponentEdit::Type::AddComponent:
-				edit.storage()->setComponent( edit.entity() );
+				m_componentFlagsManager.setComponentFlag( edit.entity(), edit.index() );
 				break;
 			case ComponentEdit::Type::RemoveComponent:
-				edit.storage()->unsetComponent( edit.entity() );
+				m_componentFlagsManager.clearComponentFlag( edit.entity(), edit.index() );
 				break;
 			}
 		}
@@ -136,11 +139,12 @@ private:
 
 	SystemManager& m_systemManager;
 	ComponentManager& m_componentManager;
+	ComponentFlagsManager& m_componentFlagsManager;
+	EIDStorage m_eidStorage;
 
 	std::vector<Entity> m_addedEntities;
 	std::vector<Entity> m_removedEntities;
 	std::vector<ComponentEdit> m_componentEdits;
-	EIDStorage m_eidStorage;
 
 };
 
