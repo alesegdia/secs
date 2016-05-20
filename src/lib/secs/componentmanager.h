@@ -8,6 +8,10 @@
 
 namespace secs {
 
+/**
+ * @brief The ComponentManager class is a proxy between users and the
+ * component storage for each component type.
+ */
 class ComponentManager
 {
 public:
@@ -31,6 +35,20 @@ public:
 		}
 		return component_storage;
 	}
+
+
+	void clear( std::vector<Entity> to_remove )
+	{
+		for( BaseComponentStorage::SharedPtr storage : m_componentStorageVector )
+		{
+			auto bits = storage->ownerEntityBits();
+			for( Entity e : to_remove )
+			{
+				bits.set(e.eid(), false);
+			}
+		}
+	}
+
 
 private:
 	/**
