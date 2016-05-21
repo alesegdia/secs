@@ -13,12 +13,15 @@ class ComponentFlagsManager
 {
 public:
 
-	void ensureEntityFits( const Entity& entity )
+	typedef ComponentFlagsManager* Ptr;
+
+	void reset( const Entity& entity )
 	{
-		if( m_entityBits.size() < entity.eid() )
+		if( m_entityBits.size() < ( entity.eid() + 1 ) )
 		{
-			m_entityBits.resize(entity.eid());
+			m_entityBits.resize(entity.eid() + 1);
 		}
+		m_entityBits[entity.eid()].reset();
 	}
 
 	void setComponentFlag( const Entity& entity, ctindex_t index )

@@ -7,6 +7,7 @@
 #include "system.h"
 #include "bits.h"
 #include "componenttraits.h"
+#include "componentflagsmanager.h"
 
 namespace secs
 {
@@ -39,6 +40,11 @@ public:
 	virtual void onRemoved( const Entity& e ) = 0 ;
 	virtual void process( const Entity& e ) = 0 ;
 
+	void setComponentFlagsManager( ComponentFlagsManager::Ptr cfm )
+	{
+		m_componentFlagsManager = cfm;
+	}
+
 	// System interface
 	virtual void step() final;
 
@@ -50,6 +56,7 @@ private:
 	ComponentBits m_neededComponents;
 	EntityBits m_entityBits;
 	std::list<Entity> m_activeEntities;
+	ComponentFlagsManager::Ptr m_componentFlagsManager;
 
 };
 

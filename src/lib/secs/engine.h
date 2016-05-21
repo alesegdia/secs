@@ -14,7 +14,8 @@ class Engine
 public:
 
 	Engine()
-		: m_entityProcessor( m_systemManager, m_componentManager )
+		: m_systemManager( m_componentFlagsManager ),
+		  m_entityProcessor( m_systemManager, m_componentManager, m_componentFlagsManager )
 	{
 
 	}
@@ -37,6 +38,7 @@ public:
 
 private:
 
+	ComponentFlagsManager m_componentFlagsManager;
 	SystemManager m_systemManager;
 	ComponentManager m_componentManager;
 	EntityProcessor m_entityProcessor;

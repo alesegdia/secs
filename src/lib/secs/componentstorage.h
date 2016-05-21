@@ -45,21 +45,17 @@ public:
 	 */
 	ComponentType& allocComponent( const Entity& e )
 	{
-		if( m_storage.size() < e.eid() )
+		if( m_storage.size() < ( e.eid() + 1 ) )
 		{
-			m_storage.resize(e.eid());
+			m_storage.resize(e.eid() + 1);
 		}
+		m_storage[e.eid()] = {};
 		return m_storage[e.eid()];
 	}
 
-	/**
-	 * @brief replaces old ComponentType associated to the entity with a fresh one
-	 * @param e
-	 */
-	void freeComponent( const Entity& e )
+	ComponentType& component( const Entity& e )
 	{
-		assert( e.eid() < m_storage.size() );
-		m_storage[ e.eid() ] = {};
+		return m_storage[e.eid()];
 	}
 
 private:

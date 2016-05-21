@@ -9,7 +9,7 @@ public:
 
 	typedef System* Ptr;
 
-	virtual ~System() = 0 ;
+	virtual ~System();
 
 	virtual void step() = 0 ;
 

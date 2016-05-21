@@ -74,7 +74,7 @@ public:
 		m_componentFlagsManager.componentFlags( entity );
 		auto storage = m_componentManager.componentStorage<ComponentType>();
 		m_componentEdits.push_back( ComponentEdit( entity, ComponentEdit::Type::AddComponent, ComponentTraits::getIndex<ComponentType>() ));
-		storage->component( entity ) = {};
+		storage->allocComponent( entity );
 		return storage->component( entity );
 	}
 
@@ -95,6 +95,7 @@ public:
 	{
 		Entity entity = m_eidStorage.retrieve();
 		m_addedEntities.push_back( entity );
+		m_componentFlagsManager.reset( entity );
 		return entity;
 	}
 
@@ -121,8 +122,6 @@ private:
 		change_list.unique();
 
 		std::vector<Entity> change_vector { std::begin( change_list ), std::end( change_list ) } ;
-
-		m_componentManager.clear( m_removedEntities );
 
 		m_systemManager.changed( change_vector );
 		m_systemManager.added( m_addedEntities );

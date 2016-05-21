@@ -44,13 +44,14 @@ private:
 
 int main( int argc, char** argv )
 {
-	secs::EntityProcessor world;
+	secs::Engine world;
+	secs::EntityProcessor& processor = world.processor();
 
-	secs::Entity e1 = world.addEntity();
+	secs::Entity e1 = processor.addEntity();
 
-	Component1& e1c1 = world.addComponent<Component1>( e1 );
-	Component2& e1c2 = world.addComponent<Component2>( e1 );
-	Component3& e1c3 = world.addComponent<Component3>( e1 );
+	Component1& e1c1 = processor.addComponent<Component1>( e1 );
+	Component2& e1c2 = processor.addComponent<Component2>( e1 );
+	Component3& e1c3 = processor.addComponent<Component3>( e1 );
 
 
 }

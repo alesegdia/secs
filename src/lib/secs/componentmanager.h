@@ -21,11 +21,11 @@ public:
 	{
 		typename ComponentStorage<ComponentType>::SharedPtr component_storage;
 		auto component_index = ComponentTraits::getIndex<ComponentType>();
-		if( component_index > m_componentStorageVector.size() )
+		if( ( component_index + 1 ) > m_componentStorageVector.size() )
 		{
 			auto base_storage = std::shared_ptr<BaseComponentStorage>(new ComponentStorage<ComponentType>());
 			component_storage = std::static_pointer_cast<ComponentStorage<ComponentType>>(base_storage);
-			m_componentStorageVector.resize( component_index );
+			m_componentStorageVector.resize( component_index + 1 );
 			m_componentStorageVector[component_index] = base_storage;
 		}
 		else
@@ -35,20 +35,6 @@ public:
 		}
 		return component_storage;
 	}
-
-
-	void clear( std::vector<Entity> to_remove )
-	{
-		for( BaseComponentStorage::SharedPtr storage : m_componentStorageVector )
-		{
-			auto bits = storage->ownerEntityBits();
-			for( Entity e : to_remove )
-			{
-				bits.set(e.eid(), false);
-			}
-		}
-	}
-
 
 private:
 	/**

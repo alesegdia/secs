@@ -27,7 +27,7 @@ void secs::EntitySystem::changed(const std::vector<secs::Entity> &entities)
 	for( const Entity& entity : entities )
 	{
 		bool already_present = m_entityBits.test( entity.eid() );
-		bool system_accept = acceptsEntity( entity );
+		bool system_accept = acceptsEntity( m_componentFlagsManager->componentFlags( entity ) );
 		if( already_present && !system_accept )
 		{
 			remove( entity );

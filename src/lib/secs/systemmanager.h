@@ -3,6 +3,7 @@
 #include "entityobserver.h"
 #include "system.h"
 #include "entitysystem.h"
+#include "componentflagsmanager.h"
 
 namespace secs
 {
@@ -10,6 +11,12 @@ namespace secs
 class SystemManager : public EntityObserver
 {
 public:
+
+	SystemManager( ComponentFlagsManager flags_manager )
+		: m_flagsManager( flags_manager )
+	{
+
+	}
 
 	// EntityObserver interface
 	void changed(const std::vector<Entity> &entities) final
@@ -38,9 +45,11 @@ public:
 
 	void pushSystem( System::Ptr system )
 	{
-		if( dynamic_cast<EntitySystem::Ptr>( system ) != nullptr )
+		EntitySystem::Ptr entity_system = dynamic_cast<EntitySystem::Ptr>( system );
+		if( nullptr != entity_system )
 		{
-			m_entitySystems.push_back( static_cast<EntitySystem::Ptr>(system) );
+			entity_system->setComponentFlagsManager( &m_flagsManager );
+			m_entitySystems.push_back( entity_system );
 		}
 		m_systems.push_back( system );
 	}
@@ -55,6 +64,7 @@ public:
 
 private:
 	std::vector<System::Ptr> m_systems;
+	ComponentFlagsManager& m_flagsManager;
 
 	// observers?
 	std::vector<EntitySystem::Ptr> m_entitySystems;
