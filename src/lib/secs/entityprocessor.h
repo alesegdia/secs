@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_set>
+#include <algorithm>
 
 #include "entity.h"
 #include "componentmanager.h"
@@ -122,8 +123,19 @@ private:
 		change_list.unique();
 
 		std::vector<Entity> change_vector { std::begin( change_list ), std::end( change_list ) } ;
+		std::sort( change_vector.begin(), change_vector.end() );
+		std::sort( m_addedEntities.begin(), m_addedEntities.end() );
 
-		m_systemManager.changed( change_vector );
+		// we discard created entities from the change set because systems will already be notified
+		// from m_addedEntities. We could remove this computation from here and let the system manager to
+		// perform the difference computation, and pass all 3 sets without filtering at once
+		// SystemManager::update( changed, added, removed )
+		std::vector<Entity> filtered_change_vector;
+		std::set_difference( change_vector.begin(), change_vector.end(),
+							 m_addedEntities.begin(), m_addedEntities.end(),
+							 std::back_inserter( filtered_change_vector ));
+
+		m_systemManager.changed( filtered_change_vector );
 		m_systemManager.added( m_addedEntities );
 		m_systemManager.removed( m_removedEntities );
 
