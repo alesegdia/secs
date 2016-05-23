@@ -15,29 +15,13 @@ public:
 
 	typedef ComponentFlagsManager* Ptr;
 
-	void reset( const Entity& entity )
-	{
-		if( m_entityBits.size() < ( entity.eid() + 1 ) )
-		{
-			m_entityBits.resize(entity.eid() + 1);
-		}
-		m_entityBits[entity.eid()].reset();
-	}
+	void reset( const Entity& entity );
 
-	void setComponentFlag( const Entity& entity, ctindex_t index )
-	{
-		componentFlags( entity.eid() ).set( index, true );
-	}
+	void setComponentFlag( const Entity& entity, ctindex_t index );
 
-	void clearComponentFlag( const Entity& entity, ctindex_t index )
-	{
-		componentFlags( entity.eid() ).set( index, false );
-	}
+	void clearComponentFlag( const Entity& entity, ctindex_t index );
 
-	ComponentBits& componentFlags( const Entity& entity )
-	{
-		return m_entityBits[entity.eid()];
-	}
+	ComponentBits& componentFlags( const Entity& entity );
 
 private:
 	std::vector<ComponentBits> m_entityBits;
