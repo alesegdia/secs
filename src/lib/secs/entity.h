@@ -15,8 +15,8 @@ public:
 
 	eid_t eid() const;
 
-	bool operator==(const Entity& other);
-	bool operator<( const Entity& other )
+	bool operator==( const Entity& other ) ;
+	bool operator<( const Entity& other ) const
 	{
 		return m_eid < other.m_eid;
 	}
