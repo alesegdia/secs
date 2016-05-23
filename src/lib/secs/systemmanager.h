@@ -12,7 +12,7 @@ class SystemManager : public EntityObserver
 {
 public:
 
-	SystemManager( ComponentFlagsManager flags_manager )
+	SystemManager( ComponentFlagsManager& flags_manager )
 		: m_flagsManager( flags_manager )
 	{
 
