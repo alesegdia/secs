@@ -2,6 +2,7 @@
 
 #include <list>
 #include <algorithm>
+#include <iostream>
 
 #include "entityobserver.h"
 #include "system.h"
@@ -31,19 +32,13 @@ public:
 	void removed( const std::vector<Entity> &entities ) final;
 	void changed( const std::vector<Entity> &entities ) final;
 
-	virtual bool acceptsEntity( ComponentBits entity_component_bits )
-	{
-		return ( m_neededComponents & entity_component_bits ) == m_neededComponents;
-	}
+	virtual bool acceptsEntity( const Entity& entity );
 
 	virtual void onAdded( const Entity& e ) = 0 ;
 	virtual void onRemoved( const Entity& e ) = 0 ;
 	virtual void process( const Entity& e ) = 0 ;
 
-	void setComponentFlagsManager( ComponentFlagsManager::Ptr cfm )
-	{
-		m_componentFlagsManager = cfm;
-	}
+	void setComponentFlagsManager( ComponentFlagsManager::Ptr cfm );
 
 	// System interface
 	virtual void step() final;

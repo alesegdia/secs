@@ -10,7 +10,10 @@ void secs::EntitySystem::added(const std::vector<secs::Entity> &entities)
 {
 	for( const Entity& entity : entities )
 	{
-		add( entity );
+		if( acceptsEntity( entity ) )
+		{
+			add( entity );
+		}
 	}
 }
 
@@ -27,7 +30,7 @@ void secs::EntitySystem::changed(const std::vector<secs::Entity> &entities)
 	for( const Entity& entity : entities )
 	{
 		bool already_present = m_entityBits.test( entity.eid() );
-		bool system_accept = acceptsEntity( m_componentFlagsManager->componentFlags( entity ) );
+		bool system_accept = acceptsEntity( entity );
 		if( already_present && !system_accept )
 		{
 			remove( entity );
@@ -37,6 +40,17 @@ void secs::EntitySystem::changed(const std::vector<secs::Entity> &entities)
 			add( entity );
 		}
 	}
+}
+
+bool secs::EntitySystem::acceptsEntity(const secs::Entity& entity)
+{
+	ComponentBits &entity_component_bits = m_componentFlagsManager->componentFlags( entity );
+	return ( m_neededComponents & entity_component_bits ) == m_neededComponents;
+}
+
+void secs::EntitySystem::setComponentFlagsManager(secs::ComponentFlagsManager::Ptr cfm)
+{
+	m_componentFlagsManager = cfm;
 }
 
 void secs::EntitySystem::step()
