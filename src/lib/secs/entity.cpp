@@ -18,6 +18,11 @@ bool Entity::operator==(const Entity &other)
 	return m_eid == other.eid();
 }
 
+bool Entity::operator<(const Entity &other) const
+{
+	return m_eid < other.m_eid;
+}
+
 
 
 }

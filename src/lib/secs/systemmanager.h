@@ -12,55 +12,18 @@ class SystemManager : public EntityObserver
 {
 public:
 
-	SystemManager( ComponentFlagsManager& flags_manager )
-		: m_flagsManager( flags_manager )
-	{
-
-	}
+	SystemManager( ComponentFlagsManager& flags_manager );
 
 	// EntityObserver interface
-	void changed(const std::vector<Entity> &entities) final
-	{
-		for( auto system : m_entitySystems )
-		{
-			system->changed( entities );
-		}
-	}
+	void changed(const std::vector<Entity> &entities) final;
 
-	void added(const std::vector<Entity> &entities) final
-	{
-		for( auto system : m_entitySystems )
-		{
-			system->added( entities );
-		}
-	}
+	void added(const std::vector<Entity> &entities) final;
 
-	void removed(const std::vector<Entity> &entities) final
-	{
-		for( auto system : m_entitySystems )
-		{
-			system->removed( entities );
-		}
-	}
+	void removed(const std::vector<Entity> &entities) final;
 
-	void pushSystem( System::Ptr system )
-	{
-		EntitySystem::Ptr entity_system = dynamic_cast<EntitySystem::Ptr>( system );
-		if( nullptr != entity_system )
-		{
-			entity_system->setComponentFlagsManager( &m_flagsManager );
-			m_entitySystems.push_back( entity_system );
-		}
-		m_systems.push_back( system );
-	}
+	void pushSystem( System::Ptr system );
 
-	void step()
-	{
-		for( auto system : m_systems )
-		{
-			system->step();
-		}
-	}
+	void step();
 
 private:
 	std::vector<System::Ptr> m_systems;
