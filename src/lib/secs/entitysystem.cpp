@@ -48,6 +48,16 @@ bool secs::EntitySystem::acceptsEntity(const secs::Entity& entity)
 	return ( m_neededComponents & entity_component_bits ) == m_neededComponents;
 }
 
+void secs::EntitySystem::onAdded(const secs::Entity &e)
+{
+
+}
+
+void secs::EntitySystem::onRemoved(const secs::Entity &e)
+{
+
+}
+
 void secs::EntitySystem::setComponentFlagsManager(secs::ComponentFlagsManager::Ptr cfm)
 {
 	m_componentFlagsManager = cfm;

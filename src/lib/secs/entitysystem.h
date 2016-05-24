@@ -34,8 +34,8 @@ public:
 
 	virtual bool acceptsEntity( const Entity& entity );
 
-	virtual void onAdded( const Entity& e ) = 0 ;
-	virtual void onRemoved( const Entity& e ) = 0 ;
+	virtual void onAdded( const Entity& e );
+	virtual void onRemoved( const Entity& e );
 	virtual void process( const Entity& e ) = 0 ;
 
 	void setComponentFlagsManager( ComponentFlagsManager::Ptr cfm );
