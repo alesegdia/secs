@@ -30,6 +30,12 @@ public:
 		return m_entityProcessor;
 	}
 
+	template <typename ComponentType>
+	ComponentType& component( const Entity& e )
+	{
+		return m_componentManager.componentStorage<ComponentType>()->component(e);
+	}
+
 	void step()
 	{
 		m_entityProcessor.applyChanges();
