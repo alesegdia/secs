@@ -10,6 +10,9 @@ namespace secs
 class EntityObserver
 {
 public:
+
+	typedef EntityObserver* Ptr;
+
 	virtual ~EntityObserver() = 0;
 
 	virtual void changed( const std::vector<Entity>& entities ) = 0 ;

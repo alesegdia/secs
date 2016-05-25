@@ -38,7 +38,16 @@ void secs::SystemManager::pushSystem(secs::System::Ptr system)
 		entity_system->setComponentFlagsManager( &m_flagsManager );
 		m_entitySystems.push_back( entity_system );
 	}
-	m_systems.push_back( system );
+
+	if( system->isRenderingSystem() )
+	{
+		m_renderingSystems.push_back( system );
+	}
+	else
+	{
+		m_systems.push_back( system );
+	}
+
 }
 
 void secs::SystemManager::step( float delta )
@@ -46,5 +55,13 @@ void secs::SystemManager::step( float delta )
 	for( auto system : m_systems )
 	{
 		system->step( delta );
+	}
+}
+
+void secs::SystemManager::render()
+{
+	for( auto system : m_renderingSystems )
+	{
+		system->step( 0 );
 	}
 }

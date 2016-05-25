@@ -13,6 +13,20 @@ public:
 
 	virtual void step( float delta ) = 0 ;
 
+	bool isRenderingSystem()
+	{
+		return m_isRenderingSystem;
+	}
+
+protected:
+	void renderingSystem( bool set );
+
+private:
+	/**
+	 * @brief m_isRenderingSystem
+	 */
+	int m_isRenderingSystem = false;
+
 };
 
 }

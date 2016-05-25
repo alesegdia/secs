@@ -25,13 +25,32 @@ public:
 
 	void step( float delta );
 
+	void render()
+	{
+		for( auto system : m_renderingSystems )
+		{
+			system->step( 0 );
+		}
+	}
+
 private:
-	std::vector<System::Ptr> m_systems;
+
+	/**
+	 * @brief m_systems all systems to execute on step()
+	 */
+	std::vector<System::Ptr>		m_systems;
+
+	/**
+	 * @brief m_renderingSystems all rendering systems to execute on render()
+	 */
+	std::vector<System::Ptr>		m_renderingSystems;
+
+	/**
+	 * @brief m_entitySystems all entity systems for entity change/add/removal notification
+	 */
+	std::vector<EntitySystem::Ptr>	m_entitySystems;
+
 	ComponentFlagsManager& m_flagsManager;
-
-	// observers?
-	std::vector<EntitySystem::Ptr> m_entitySystems;
-
 
 };
 

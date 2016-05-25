@@ -42,6 +42,11 @@ public:
 		m_systemManager.step( delta );
 	}
 
+	void render()
+	{
+		m_systemManager.render();
+	}
+
 private:
 
 	ComponentFlagsManager m_componentFlagsManager;
