@@ -41,10 +41,10 @@ void secs::SystemManager::pushSystem(secs::System::Ptr system)
 	m_systems.push_back( system );
 }
 
-void secs::SystemManager::step()
+void secs::SystemManager::step( float delta )
 {
 	for( auto system : m_systems )
 	{
-		system->step();
+		system->step( delta );
 	}
 }

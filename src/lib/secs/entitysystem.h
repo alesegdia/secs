@@ -27,21 +27,22 @@ public:
 
 	~EntitySystem() = 0;
 
+	// System interface
+	virtual void step( float delta ) final ;
+
 	// EntityObserver interface
-	void added( const std::vector<Entity> &entities ) final;
-	void removed( const std::vector<Entity> &entities ) final;
-	void changed( const std::vector<Entity> &entities ) final;
+	void added( const std::vector<Entity> &entities ) final ;
+	void removed( const std::vector<Entity> &entities ) final ;
+	void changed( const std::vector<Entity> &entities ) final ;
 
 	virtual bool acceptsEntity( const Entity& entity );
 
 	virtual void onAdded( const Entity& e );
 	virtual void onRemoved( const Entity& e );
-	virtual void process( const Entity& e ) = 0 ;
+	virtual void process( float delta, const Entity& e ) = 0 ;
 
 	void setComponentFlagsManager( ComponentFlagsManager::Ptr cfm );
 
-	// System interface
-	virtual void step() final;
 
 private:
 

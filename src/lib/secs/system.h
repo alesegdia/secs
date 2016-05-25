@@ -11,7 +11,7 @@ public:
 
 	virtual ~System();
 
-	virtual void step() = 0 ;
+	virtual void step( float delta ) = 0 ;
 
 };
 

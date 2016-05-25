@@ -23,7 +23,7 @@ public:
 
 	void pushSystem( System::Ptr system );
 
-	void step();
+	void step( float delta );
 
 private:
 	std::vector<System::Ptr> m_systems;

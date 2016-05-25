@@ -36,10 +36,10 @@ public:
 		return m_componentManager.componentStorage<ComponentType>()->component(e);
 	}
 
-	void step()
+	void step( float delta )
 	{
 		m_entityProcessor.applyChanges();
-		m_systemManager.step();
+		m_systemManager.step( delta );
 	}
 
 private:

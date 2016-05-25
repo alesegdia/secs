@@ -63,11 +63,11 @@ void secs::EntitySystem::setComponentFlagsManager(secs::ComponentFlagsManager::P
 	m_componentFlagsManager = cfm;
 }
 
-void secs::EntitySystem::step()
+void secs::EntitySystem::step(float delta)
 {
 	for( const Entity& e : m_activeEntities )
 	{
-		process( e );
+		process( delta, e );
 	}
 }
 
