@@ -25,13 +25,7 @@ public:
 
 	void step( float delta );
 
-	void render()
-	{
-		for( auto system : m_renderingSystems )
-		{
-			system->step( 0 );
-		}
-	}
+	void render();
 
 private:
 

@@ -72,9 +72,9 @@ public:
 	template <typename ComponentType>
 	ComponentType& addComponent( const Entity& entity )
 	{
-		m_componentFlagsManager.componentFlags( entity );
 		auto storage = m_componentManager.componentStorage<ComponentType>();
-		m_componentEdits.push_back( ComponentEdit( entity, ComponentEdit::Type::AddComponent, ComponentTraits::getIndex<ComponentType>() ));
+		ctindex_t component_index = ComponentTraits::getIndex<ComponentType>();
+		m_componentEdits.push_back( ComponentEdit( entity, ComponentEdit::Type::AddComponent, component_index ));
 		storage->allocComponent( entity );
 		return storage->component( entity );
 	}
