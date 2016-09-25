@@ -17,6 +17,8 @@ class ComponentManager
 {
 public:
 
+	typedef ComponentManager* Ptr;
+
 	template <typename ComponentType>
 	typename ComponentStorage<ComponentType>::SharedPtr componentStorage()
 	{
