@@ -42,6 +42,12 @@ public:
 		return component_storage;
 	}
 
+	template <typename ComponentType>
+	ComponentType& component( Entity e )
+	{
+		return componentStorage<ComponentType>()->component(e);
+	}
+
 private:
 	/**
 	 * @brief m_componentStorageVector
