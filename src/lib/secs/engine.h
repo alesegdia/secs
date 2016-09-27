@@ -8,10 +8,11 @@
 namespace secs
 {
 
-
 class Engine
 {
 public:
+
+	typedef Engine* Ptr;
 
 	Engine()
 		: m_systemManager( m_componentFlagsManager ),
@@ -22,7 +23,7 @@ public:
 
 	void pushSystem( System::Ptr system )
 	{
-		m_systemManager.pushSystem( system );
+		m_systemManager.pushSystem( system, &m_entityProcessor, &m_componentManager );
 	}
 
 	EntityProcessor& processor()
@@ -45,6 +46,11 @@ public:
 	void render()
 	{
 		m_systemManager.render();
+	}
+
+	void deactivate( const Entity e )
+	{
+
 	}
 
 private:

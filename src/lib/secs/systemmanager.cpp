@@ -30,13 +30,15 @@ void secs::SystemManager::removed(const std::vector<secs::Entity> &entities)
 	}
 }
 
-void secs::SystemManager::pushSystem(secs::System::Ptr system)
+void secs::SystemManager::pushSystem(secs::System::Ptr system, EntityProcessor::Ptr processor, ComponentManager::Ptr component_manager)
 {
 	EntitySystem::Ptr entity_system = dynamic_cast<EntitySystem::Ptr>( system );
 	if( nullptr != entity_system )
 	{
 		entity_system->setComponentFlagsManager( &m_flagsManager );
 		m_entitySystems.push_back( entity_system );
+		entity_system->setEntityProcessor(processor);
+		entity_system->setComponentManager(component_manager);
 	}
 
 	if( system->isRenderingSystem() )

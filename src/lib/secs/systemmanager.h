@@ -4,6 +4,7 @@
 #include "system.h"
 #include "entitysystem.h"
 #include "componentflagsmanager.h"
+#include "entityprocessor.h"
 
 namespace secs
 {
@@ -21,7 +22,7 @@ public:
 
 	void removed(const std::vector<Entity> &entities) final;
 
-	void pushSystem( System::Ptr system );
+	void pushSystem(System::Ptr system, EntityProcessor::Ptr processor , ComponentManager::Ptr component_manager);
 
 	void step( float delta );
 

@@ -9,6 +9,8 @@
 #include "bits.h"
 #include "componenttraits.h"
 #include "componentflagsmanager.h"
+#include "componentmanager.h"
+#include "entityprocessor.h"
 
 namespace secs
 {
@@ -42,10 +44,28 @@ public:
 	virtual void process( float delta, const Entity& e ) = 0 ;
 
 	void setComponentFlagsManager( ComponentFlagsManager::Ptr cfm );
+	void setEntityProcessor( EntityProcessor::Ptr processor )
+	{
+		m_entityProcessor = processor;
+	}
+	void setComponentManager( ComponentManager::Ptr component_manager )
+	{
+		m_componentManager = component_manager;
+	}
 
+protected:
+	EntityProcessor::Ptr processor()
+	{
+		return m_entityProcessor;
+	}
+
+	template <typename ComponentType>
+	ComponentType& component( const Entity& e )
+	{
+		return m_componentManager->component<ComponentType>(e);
+	}
 
 private:
-
 	void remove( const Entity& entity );
 	void add( const Entity& entity );
 
@@ -53,7 +73,38 @@ private:
 	EntityBits m_entityBits;
 	std::list<Entity> m_activeEntities;
 	ComponentFlagsManager::Ptr m_componentFlagsManager;
+	EntityProcessor::Ptr m_entityProcessor;
+	ComponentManager::Ptr m_componentManager;
 
 };
+
+/**
+ * This class represents an entity system which has automatic component deduction
+ */
+template <typename... Args>
+class TypedEntitySystem : public EntitySystem
+{
+public:
+
+	typedef TypedEntitySystem<Args...> ParentType;
+
+	TypedEntitySystem()
+	{
+		setNeededComponents<Args...>();
+	}
+
+	void process( float delta, const secs::Entity& e ) final
+	{
+		process( delta, e, component<Args>(e)... );
+	}
+
+	virtual void process(float delta, const secs::Entity& e, Args&... args ) = 0 ;
+
+private:
+	ComponentManager::Ptr m_componentManager;
+
+};
+
+
 
 }

@@ -2,11 +2,13 @@
 
 #include <unordered_set>
 #include <algorithm>
+#include <list>
+#include <vector>
 
 #include "entity.h"
 #include "componentmanager.h"
 #include "eidstorage.h"
-#include "systemmanager.h"
+#include "entityobserver.h"
 #include "componentflagsmanager.h"
 
 namespace secs
@@ -61,8 +63,8 @@ public:
 
 	typedef EntityProcessor* Ptr;
 
-	EntityProcessor( SystemManager& system_manager, ComponentManager& component_manager, ComponentFlagsManager& component_flags_manager )
-		: m_systemManager(system_manager),
+	EntityProcessor( EntityObserver& system_observer, ComponentManager& component_manager, ComponentFlagsManager& component_flags_manager )
+		: m_EntityObserver(system_observer),
 		  m_componentManager(component_manager),
 		  m_componentFlagsManager(component_flags_manager)
 	{
@@ -100,6 +102,11 @@ public:
 		return entity;
 	}
 
+	void deactivateEntity( const Entity& entity )
+	{
+		m_deactivatedEntities.push_back( entity );
+	}
+
 private:
 
 	void applyChanges()
@@ -129,15 +136,15 @@ private:
 		// we discard created entities from the change set because systems will already be notified
 		// from m_addedEntities. We could remove this computation from here and let the system manager to
 		// perform the difference computation, and pass all 3 sets without filtering at once
-		// SystemManager::update( changed, added, removed )
+		// EntityObserver::update( changed, added, removed )
 		std::vector<Entity> filtered_change_vector;
 		std::set_difference( change_vector.begin(), change_vector.end(),
 							 m_addedEntities.begin(), m_addedEntities.end(),
 							 std::back_inserter( filtered_change_vector ));
 
-		m_systemManager.changed( filtered_change_vector );
-		m_systemManager.added( m_addedEntities );
-		m_systemManager.removed( m_removedEntities );
+		m_EntityObserver.changed( filtered_change_vector );
+		m_EntityObserver.added( m_addedEntities );
+		m_EntityObserver.removed( m_removedEntities );
 
 		for( auto entity : m_removedEntities )
 		{
@@ -146,15 +153,17 @@ private:
 
 		m_addedEntities.clear();
 		m_removedEntities.clear();
+		m_deactivatedEntities.clear();
 	}
 
-	SystemManager& m_systemManager;
+	EntityObserver& m_EntityObserver;
 	ComponentManager& m_componentManager;
 	ComponentFlagsManager& m_componentFlagsManager;
 	EIDStorage m_eidStorage;
 
 	std::vector<Entity> m_addedEntities;
 	std::vector<Entity> m_removedEntities;
+	std::vector<Entity> m_deactivatedEntities;
 	std::vector<ComponentEdit> m_componentEdits;
 
 };
