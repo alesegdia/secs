@@ -82,7 +82,7 @@ public:
 	}
 
 	template <typename ComponentType>
-	void removeComponent( const Entity& entity )
+	ComponentType& removeComponent( const Entity& entity )
 	{
 		auto storage = m_componentManager.componentStorage<ComponentType>();
 		m_componentEdits.push_back( ComponentEdit( entity, ComponentEdit::Type::RemoveComponent, ComponentTraits::getIndex<ComponentType>() ));
