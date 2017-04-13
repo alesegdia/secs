@@ -37,7 +37,7 @@ public:
 		return m_componentManager.componentStorage<ComponentType>()->component(e);
 	}
 
-	void step( float delta )
+    void step( double delta )
 	{
 		m_entityProcessor.applyChanges();
 		m_systemManager.step( delta );

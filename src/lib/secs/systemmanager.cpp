@@ -52,7 +52,7 @@ void secs::SystemManager::pushSystem(secs::System::Ptr system, EntityProcessor::
 
 }
 
-void secs::SystemManager::step( float delta )
+void secs::SystemManager::step( double delta )
 {
 	for( auto system : m_systems )
 	{

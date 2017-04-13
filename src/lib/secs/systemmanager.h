@@ -24,7 +24,7 @@ public:
 
 	void pushSystem(System::Ptr system, EntityProcessor::Ptr processor , ComponentManager::Ptr component_manager);
 
-	void step( float delta );
+    void step(double delta );
 
 	void render();
 

@@ -30,7 +30,7 @@ public:
 	~EntitySystem() = 0;
 
 	// System interface
-	virtual void step( float delta ) final ;
+    virtual void step(double delta ) final ;
 
 	// EntityObserver interface
 	void added( const std::vector<Entity> &entities ) final ;
@@ -41,7 +41,7 @@ public:
 
 	virtual void onAdded( const Entity& e );
 	virtual void onRemoved( const Entity& e );
-	virtual void process( float delta, const Entity& e ) = 0 ;
+    virtual void process( double delta, const Entity& e ) = 0 ;
 
 	void setComponentFlagsManager( ComponentFlagsManager::Ptr cfm );
 	void setEntityProcessor( EntityProcessor::Ptr processor )
@@ -93,12 +93,12 @@ public:
 		setNeededComponents<Args...>();
 	}
 
-	void process( float delta, const secs::Entity& e ) final
+    void process( double delta, const secs::Entity& e ) final
 	{
 		process( delta, e, component<Args>(e)... );
 	}
 
-	virtual void process(float delta, const secs::Entity& e, Args&... args ) = 0 ;
+    virtual void process(double delta, const secs::Entity& e, Args&... args ) = 0 ;
 
 private:
 	ComponentManager::Ptr m_componentManager;

@@ -11,7 +11,7 @@ public:
 
 	virtual ~System();
 
-	virtual void step( float delta ) = 0 ;
+    virtual void step( double delta ) = 0 ;
 
 	bool isRenderingSystem()
 	{
