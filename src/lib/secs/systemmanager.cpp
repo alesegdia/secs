@@ -51,13 +51,14 @@ void secs::SystemManager::pushSystem( secs::System::Ptr system, EntitySystem::Pt
         m_entitySystems.push_back( entity_system );
 	}
 
-    if( system->isRenderingSystem() )
+    if( system->hasRenderingStep() )
 	{
         m_renderingSystems.push_back( system );
     }
-    else
+
+    if( system->hasProcessingStep())
     {
-        m_systems.push_back( system );
+        m_processingSystems.push_back( system );
     }
 
 }
@@ -96,7 +97,7 @@ void secs::SystemManager::enableSystemGroup(secs::SystemGroupIndex sgi)
 
 void secs::SystemManager::step( double delta )
 {
-    for( System::Ptr system : m_systems )
+    for( System::Ptr system : m_processingSystems )
     {
         if( system->isEnabled() )
         {
@@ -111,7 +112,7 @@ void secs::SystemManager::render()
     {
         if( system->isEnabled() )
         {
-            system->step( 0 );
+            system->renderStep( );
         }
     }
 }

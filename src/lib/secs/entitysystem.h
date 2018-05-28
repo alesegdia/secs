@@ -30,7 +30,8 @@ public:
 	~EntitySystem() = 0;
 
 	// System interface
-    virtual void step(double delta ) final ;
+    virtual void step(double delta) final ;
+    virtual void renderStep() final ;
 
 	// EntityObserver interface
 	void added( const std::vector<Entity> &entities ) final ;
@@ -41,7 +42,16 @@ public:
 
 	virtual void onAdded( const Entity& e );
     virtual void onRemoved( const Entity& e );
-    virtual void process( double delta, const Entity& e ) = 0 ;
+
+    virtual void process( double delta, const Entity& e )
+    {
+
+    }
+
+    virtual void render( const Entity& e )
+    {
+
+    }
 
 	void setComponentFlagsManager( ComponentFlagsManager::Ptr cfm );
     void setEntityProcessor( EntityProcessor::Ptr processor )

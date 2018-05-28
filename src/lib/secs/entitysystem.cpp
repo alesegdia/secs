@@ -74,6 +74,14 @@ void secs::EntitySystem::step(double delta)
     }
 }
 
+void secs::EntitySystem::renderStep()
+{
+    for( const Entity& e : m_activeEntities )
+    {
+        render( e );
+    }
+}
+
 void secs::EntitySystem::remove(const secs::Entity &entity)
 {
 	m_entityBits.set( entity.eid(), false );

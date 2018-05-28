@@ -48,7 +48,7 @@ private:
 	/**
 	 * @brief m_systems all systems to execute on step()
 	 */
-    std::vector<System::Ptr>		m_systems;
+    std::vector<System::Ptr>		m_processingSystems;
 
 	/**
 	 * @brief m_renderingSystems all rendering systems to execute on render()

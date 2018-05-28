@@ -11,37 +11,32 @@ public:
 
 	virtual ~System();
 
-    virtual void step( double delta ) = 0 ;
-
-    bool isRenderingSystem()
+    virtual void step( double delta )
     {
-        return m_isRenderingSystem;
+
     }
 
-    void enable()
+    virtual void renderStep()
     {
-        m_isEnabled = true;
+
     }
 
-    void disable()
-    {
-        m_isEnabled = false;
-    }
+    void setStepConfiguration( bool process_step, bool render_step );
 
-    bool isEnabled()
-    {
-        return m_isEnabled;
-    }
+    void enable();
 
-protected:
-    void renderingSystem( bool set );
+    void disable();
+
+    bool isEnabled();
+
+    bool hasProcessingStep();
+
+    bool hasRenderingStep();
+
 
 private:
-    /**
-     * @brief m_isRenderingSystem
-     */
-    int m_isRenderingSystem = false;
-
+    bool m_hasProcessingStep = true;
+    bool m_hasRenderingStep = false;
     bool m_isEnabled = true;
 
 };
