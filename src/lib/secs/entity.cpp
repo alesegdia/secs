@@ -3,7 +3,12 @@
 namespace secs {
 
 Entity::Entity(Entity::eid_t id)
-	: m_eid(id)
+    : m_eid(id)
+{
+
+}
+
+Entity::Entity()
 {
 
 }

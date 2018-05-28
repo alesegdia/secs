@@ -12,6 +12,7 @@ public:
 	typedef std::uint64_t eid_t;
 
 	Entity( eid_t id );
+    Entity();
 
 	eid_t eid() const;
 

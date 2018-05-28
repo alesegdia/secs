@@ -21,7 +21,10 @@ void secs::EntitySystem::removed(const std::vector<secs::Entity> &entities)
 {
 	for( const Entity& entity : entities )
 	{
-		remove( entity );
+		if( m_entityBits[entity.eid()] )
+		{
+			remove( entity );
+		}
 	}
 }
 
@@ -65,22 +68,22 @@ void secs::EntitySystem::setComponentFlagsManager(secs::ComponentFlagsManager::P
 
 void secs::EntitySystem::step(double delta)
 {
-	for( const Entity& e : m_activeEntities )
-	{
-		process( delta, e );
-	}
+    for( const Entity& e : m_activeEntities )
+    {
+        process( delta, e );
+    }
 }
 
 void secs::EntitySystem::remove(const secs::Entity &entity)
 {
 	m_entityBits.set( entity.eid(), false );
 	m_activeEntities.erase( std::remove( m_activeEntities.begin(), m_activeEntities.end(), entity ), m_activeEntities.end() );
-	onRemoved( entity );
+    onRemoved( entity );fflush(0);
 }
 
 void secs::EntitySystem::add(const secs::Entity &entity)
 {
-	m_entityBits.set( entity.eid(), true );
+    m_entityBits.set( entity.eid(), true );
 	m_activeEntities.push_back( entity );
 	onAdded( entity );
 }

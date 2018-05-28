@@ -19,12 +19,40 @@ public:
 		  m_entityProcessor( m_systemManager, m_componentManager, m_componentFlagsManager )
 	{
 
+    }
+
+    void pushSystem( System::Ptr system )
+	{
+        EntitySystem::Ptr entity_system = dynamic_cast<EntitySystem::Ptr>( system );
+        if( nullptr != entity_system )
+        {
+            entity_system->setComponentFlagsManager( &m_componentFlagsManager );
+            entity_system->setEntityProcessor( &m_entityProcessor );
+            entity_system->setComponentManager( &m_componentManager );
+        }
+
+        m_systemManager.pushSystem( system, entity_system );
 	}
 
-	void pushSystem( System::Ptr system )
-	{
-		m_systemManager.pushSystem( system, &m_entityProcessor, &m_componentManager );
-	}
+    void setSystemGroup( System::Ptr system, SystemGroupIndex group )
+    {
+        m_systemManager.setSystemGroup( system, group );
+    }
+
+    void disableGroup( SystemGroupIndex sgi )
+    {
+        m_systemManager.disableSystemGroup(sgi);
+    }
+
+    void enableGroup( SystemGroupIndex sgi )
+    {
+        m_systemManager.enableSystemGroup(sgi);
+    }
+
+    void activateSystemGroup( SystemGroupIndex sgi)
+    {
+        m_systemManager.activateSystemGroup(sgi);
+    }
 
 	EntityProcessor& processor()
 	{

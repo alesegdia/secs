@@ -40,24 +40,24 @@ public:
 	virtual bool acceptsEntity( const Entity& entity );
 
 	virtual void onAdded( const Entity& e );
-	virtual void onRemoved( const Entity& e );
+    virtual void onRemoved( const Entity& e );
     virtual void process( double delta, const Entity& e ) = 0 ;
 
 	void setComponentFlagsManager( ComponentFlagsManager::Ptr cfm );
-	void setEntityProcessor( EntityProcessor::Ptr processor )
-	{
-		m_entityProcessor = processor;
-	}
-	void setComponentManager( ComponentManager::Ptr component_manager )
-	{
-		m_componentManager = component_manager;
-	}
+    void setEntityProcessor( EntityProcessor::Ptr processor )
+    {
+        m_entityProcessor = processor;
+    }
+    void setComponentManager( ComponentManager::Ptr component_manager )
+    {
+        m_componentManager = component_manager;
+    }
 
 protected:
-	EntityProcessor::Ptr processor()
-	{
-		return m_entityProcessor;
-	}
+    EntityProcessor::Ptr processor()
+    {
+        return m_entityProcessor;
+    }
 
 	template <typename ComponentType>
 	ComponentType& component( const Entity& e )
@@ -94,14 +94,17 @@ public:
 	}
 
     void process( double delta, const secs::Entity& e ) final
-	{
-		process( delta, e, component<Args>(e)... );
-	}
+    {
+        process( delta, e, component<Args>(e)... );
+    }
 
-    virtual void process(double delta, const secs::Entity& e, Args&... args ) = 0 ;
+    virtual void process(double delta, const secs::Entity& e, Args&... args )
+	{
+
+    }
 
 private:
-	ComponentManager::Ptr m_componentManager;
+    ComponentManager::Ptr m_componentManager;
 
 };
 

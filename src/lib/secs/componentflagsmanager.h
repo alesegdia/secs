@@ -21,7 +21,19 @@ public:
 
 	void clearComponentFlag( const Entity& entity, ctindex_t index );
 
+    template <typename ComponentType>
+    bool hasComponent( const Entity& entity )
+    {
+        ctindex_t component_index = ComponentTraits::getIndex<ComponentType>();
+        return componentFlags(entity)[component_index];
+    }
+
 	ComponentBits& componentFlags( const Entity& entity );
+
+    void clearAllFlags(const Entity& entity)
+    {
+        m_entityBits[entity.eid()].reset();
+    }
 
 private:
 	std::vector<ComponentBits> m_entityBits;

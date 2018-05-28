@@ -63,8 +63,8 @@ public:
 
 	typedef EntityProcessor* Ptr;
 
-	EntityProcessor( EntityObserver& system_observer, ComponentManager& component_manager, ComponentFlagsManager& component_flags_manager )
-		: m_EntityObserver(system_observer),
+    EntityProcessor( EntityObserver& system_manager, ComponentManager& component_manager, ComponentFlagsManager& component_flags_manager )
+	    : m_systemManager(system_manager),
 		  m_componentManager(component_manager),
 		  m_componentFlagsManager(component_flags_manager)
 	{
@@ -74,10 +74,13 @@ public:
 	template <typename ComponentType>
 	ComponentType& addComponent( const Entity& entity )
 	{
-		auto storage = m_componentManager.componentStorage<ComponentType>();
-		ctindex_t component_index = ComponentTraits::getIndex<ComponentType>();
-		m_componentEdits.push_back( ComponentEdit( entity, ComponentEdit::Type::AddComponent, component_index ));
-		storage->allocComponent( entity );
+        auto storage = m_componentManager.componentStorage<ComponentType>();
+        if( false == m_componentFlagsManager.hasComponent<ComponentType>(entity) )
+        {
+            ctindex_t component_index = ComponentTraits::getIndex<ComponentType>();
+            m_componentEdits.push_back( ComponentEdit( entity, ComponentEdit::Type::AddComponent, component_index ));
+            storage->allocComponent( entity );
+        }
 		return storage->component( entity );
 	}
 
@@ -85,7 +88,10 @@ public:
 	ComponentType& removeComponent( const Entity& entity )
 	{
 		auto storage = m_componentManager.componentStorage<ComponentType>();
-		m_componentEdits.push_back( ComponentEdit( entity, ComponentEdit::Type::RemoveComponent, ComponentTraits::getIndex<ComponentType>() ));
+        if( true == m_componentFlagsManager.hasComponent<ComponentType>(entity) )
+        {
+            m_componentEdits.push_back( ComponentEdit( entity, ComponentEdit::Type::RemoveComponent, ComponentTraits::getIndex<ComponentType>() ));
+        }
 		return storage->component( entity );
 	}
 
@@ -136,27 +142,29 @@ private:
 		// we discard created entities from the change set because systems will already be notified
 		// from m_addedEntities. We could remove this computation from here and let the system manager to
 		// perform the difference computation, and pass all 3 sets without filtering at once
-		// EntityObserver::update( changed, added, removed )
+		// SystemManager::update( changed, added, removed )
 		std::vector<Entity> filtered_change_vector;
 		std::set_difference( change_vector.begin(), change_vector.end(),
 							 m_addedEntities.begin(), m_addedEntities.end(),
 							 std::back_inserter( filtered_change_vector ));
 
-		m_EntityObserver.changed( filtered_change_vector );
-		m_EntityObserver.added( m_addedEntities );
-		m_EntityObserver.removed( m_removedEntities );
+		m_systemManager.changed( filtered_change_vector );
+		m_systemManager.added( m_addedEntities );
+		m_systemManager.removed( m_removedEntities );
 
 		for( auto entity : m_removedEntities )
 		{
 			m_eidStorage.recycle( entity );
+			m_componentFlagsManager.clearAllFlags(entity);
 		}
 
 		m_addedEntities.clear();
 		m_removedEntities.clear();
 		m_deactivatedEntities.clear();
+		m_componentEdits.clear();
 	}
 
-	EntityObserver& m_EntityObserver;
+    EntityObserver& m_systemManager;
 	ComponentManager& m_componentManager;
 	ComponentFlagsManager& m_componentFlagsManager;
 	EIDStorage m_eidStorage;
