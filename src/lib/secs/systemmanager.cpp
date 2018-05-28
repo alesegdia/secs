@@ -53,12 +53,12 @@ void secs::SystemManager::pushSystem( secs::System::Ptr system, EntitySystem::Pt
 
     if( system->hasRenderingStep() )
 	{
-        m_renderingSystems.push_back( system );
+        insertSorted( system, m_renderingSystems );
     }
 
     if( system->hasProcessingStep())
     {
-        m_processingSystems.push_back( system );
+        insertSorted( system, m_processingSystems );
     }
 
 }
@@ -115,4 +115,14 @@ void secs::SystemManager::render()
             system->renderStep( );
         }
     }
+}
+
+void secs::SystemManager::insertSorted(secs::System::Ptr system, std::vector<secs::System::Ptr>& vec)
+{
+    auto comparator = []( System::Ptr s1, System::Ptr s2 )
+    {
+        return s1->executionPriority() < s2->executionPriority();
+    };
+    auto it = std::upper_bound( vec.begin(), vec.end(), system, comparator);
+    vec.insert(it, system);
 }

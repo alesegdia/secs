@@ -45,6 +45,8 @@ public:
 
 private:
 
+    void insertSorted(System::Ptr system, std::vector<System::Ptr> &vec );
+
 	/**
 	 * @brief m_systems all systems to execute on step()
 	 */
