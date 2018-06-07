@@ -27,6 +27,12 @@ public:
 		m_neededComponents = ComponentBitsBuilder<Args...>::buildBits();
 	}
 
+	template <typename... Args>
+	void addNeededComponents ()
+	{
+		m_neededComponents |= ComponentBitsBuilder<Args...>::buildBits();
+	}
+
 	~EntitySystem() = 0;
 
 	// System interface
