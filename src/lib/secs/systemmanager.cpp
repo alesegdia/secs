@@ -99,10 +99,12 @@ void secs::SystemManager::step( double delta )
 {
     for( System::Ptr system : m_processingSystems )
     {
+        system->preUpdate( delta );
         if( system->isEnabled() )
         {
             system->step( delta );
         }
+        system->postUpdate( delta );
     }
 }
 

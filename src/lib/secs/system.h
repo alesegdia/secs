@@ -11,15 +11,13 @@ public:
 
 	virtual ~System();
 
-    virtual void step( double delta )
-    {
+    virtual void step( double delta );
 
-    }
+    virtual void renderStep();
 
-    virtual void renderStep()
-    {
+    virtual void preUpdate( double delta );
 
-    }
+    virtual void postUpdate( double delta );
 
     void setStepConfiguration( bool process_step, bool render_step );
 
@@ -33,17 +31,11 @@ public:
 
     bool hasRenderingStep();
 
-    int executionPriority()
-    {
-        return m_executionPriority;
-    }
+    int executionPriority();
 
 protected:
 
-    void setExecutionPriority(int priority)
-    {
-        m_executionPriority = priority;
-    }
+    void setExecutionPriority(int priority);
 
 private:
     bool m_hasProcessingStep = true;
