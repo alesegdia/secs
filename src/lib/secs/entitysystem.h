@@ -64,9 +64,14 @@ public:
     {
         m_entityProcessor = processor;
     }
-    void setComponentManager( ComponentManager::Ptr component_manager )
-    {
+    void setComponentManager( ComponentManager::Ptr component_manager ) {
         m_componentManager = component_manager;
+    }
+
+    template <typename ComponentType>
+    ComponentType& addComponent(const secs::Entity& e)
+    {
+        return m_entityProcessor->addComponent<ComponentType>(e);
     }
 
 protected:
@@ -80,6 +85,12 @@ protected:
 	{
 		return m_componentManager->component<ComponentType>(e);
 	}
+
+    template <typename ComponentType>
+    bool hasComponent( const Entity& e )
+    {
+        return m_componentFlagsManager->hasComponent<ComponentType>(e);
+    }
 
 private:
 	void remove( const Entity& entity );

@@ -66,7 +66,8 @@ public:
     EntityProcessor( EntityObserver& system_manager, ComponentManager& component_manager, ComponentFlagsManager& component_flags_manager )
 	    : m_systemManager(system_manager),
 		  m_componentManager(component_manager),
-		  m_componentFlagsManager(component_flags_manager)
+          m_componentFlagsManager(component_flags_manager),
+          m_numEntities(0)
 	{
 
 	}
@@ -97,11 +98,13 @@ public:
 
 	void removeEntity( const Entity& entity )
 	{
+        m_numEntities--;
 		m_removedEntities.push_back( entity );
 	}
 
 	Entity addEntity()
 	{
+        m_numEntities++;
 		Entity entity = m_eidStorage.retrieve();
 		m_addedEntities.push_back( entity );
 		m_componentFlagsManager.reset( entity );
@@ -112,6 +115,11 @@ public:
 	{
 		m_deactivatedEntities.push_back( entity );
 	}
+
+    int numEntities()
+    {
+        return m_numEntities;
+    }
 
 private:
 
@@ -173,6 +181,8 @@ private:
 	std::vector<Entity> m_removedEntities;
 	std::vector<Entity> m_deactivatedEntities;
 	std::vector<ComponentEdit> m_componentEdits;
+
+    int m_numEntities;
 
 };
 
