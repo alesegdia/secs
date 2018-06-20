@@ -48,15 +48,15 @@ public:
     {
         if( m_storage.size() < ( e.eid() + 1 ) )
         {
-            m_storage.resize(e.eid() + 32);
+            m_storage.resize(secs::eid_t(e.eid() + 32));
         }
-        m_storage[e.eid()] = {};
-        return m_storage[e.eid()];
+        m_storage[secs::eid_t(e.eid())] = {};
+        return m_storage[secs::eid_t(e.eid())];
     }
 
     ComponentType& component( const Entity& e )
     {
-        return m_storage[e.eid()];
+        return m_storage[secs::eid_t(e.eid())];
     }
 
 private:

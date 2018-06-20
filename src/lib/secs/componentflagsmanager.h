@@ -32,7 +32,7 @@ public:
 
     void clearAllFlags(const Entity& entity)
     {
-        m_entityBits[entity.eid()].reset();
+		m_entityBits[secs::eid_t(entity.eid())].reset();
     }
 
 private:

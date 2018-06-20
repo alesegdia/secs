@@ -6,7 +6,7 @@ void secs::ComponentFlagsManager::reset(const secs::Entity &entity)
 {
 	if( m_entityBits.size() < ( entity.eid() + 1 ) )
 	{
-		m_entityBits.resize(entity.eid() + 1);
+		m_entityBits.resize(secs::eid_t(entity.eid() + 1));
 	}
 	componentFlags( entity ).reset();
 }
@@ -23,5 +23,5 @@ void secs::ComponentFlagsManager::clearComponentFlag(const secs::Entity &entity,
 
 secs::ComponentBits &secs::ComponentFlagsManager::componentFlags(const secs::Entity &entity)
 {
-	return m_entityBits[entity.eid()];
+	return m_entityBits[secs::eid_t(entity.eid())];
 }

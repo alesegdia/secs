@@ -21,7 +21,7 @@ eid_t EIDStorage::retrieve()
 
 void EIDStorage::recycle( Entity entity )
 {
-	m_recycledEIDs.push( entity.eid() );
+	m_recycledEIDs.push( secs::eid_t(entity.eid()) );
 }
 
 eid_t EIDStorage::lastEID() const
