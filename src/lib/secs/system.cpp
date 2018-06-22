@@ -1,5 +1,7 @@
 #include "system.h"
 
+#include "config.h"
+
 secs::System::~System()
 {
 
@@ -7,7 +9,7 @@ secs::System::~System()
 
 void secs::System::step(double delta)
 {
-
+    SECS_UNUSED(delta);
 }
 
 void secs::System::renderStep()
@@ -17,12 +19,12 @@ void secs::System::renderStep()
 
 void secs::System::preUpdate(double delta)
 {
-
+    SECS_UNUSED(delta);
 }
 
 void secs::System::postUpdate(double delta)
 {
-
+    SECS_UNUSED(delta);
 }
 
 void secs::System::setStepConfiguration(bool process_step, bool render_step)

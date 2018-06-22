@@ -17,3 +17,5 @@ public:
 };
 
 }
+
+#define SECS_UNUSED(v) (void)v;

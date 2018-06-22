@@ -53,12 +53,12 @@ bool secs::EntitySystem::acceptsEntity(const secs::Entity& entity)
 
 void secs::EntitySystem::onAdded(const secs::Entity &e)
 {
-
+    SECS_UNUSED(e);
 }
 
 void secs::EntitySystem::onRemoved(const secs::Entity &e)
 {
-
+    SECS_UNUSED(e);
 }
 
 void secs::EntitySystem::setComponentFlagsManager(secs::ComponentFlagsManager::Ptr cfm)

@@ -3,7 +3,7 @@
 secs::SystemManager::SystemManager(secs::ComponentFlagsManager &flags_manager)
 	: m_flagsManager( flags_manager )
 {
-    for( int i = 0; i < MaxSystemGroups; i++ )
+    for( secs::SystemGroupIndex i = 0; i < MaxSystemGroups; i++ )
     {
         m_systemsByGroup[i] = nullptr;
     }
@@ -11,7 +11,7 @@ secs::SystemManager::SystemManager(secs::ComponentFlagsManager &flags_manager)
 
 secs::SystemManager::~SystemManager()
 {
-    for( int i = 0; i < MaxSystemGroups; i++ )
+    for( size_t i = 0; i < MaxSystemGroups; i++ )
     {
         if( m_systemsByGroup[i] != nullptr )
         {
@@ -65,7 +65,7 @@ void secs::SystemManager::pushSystem( secs::System::Ptr system, EntitySystem::Pt
 
 void secs::SystemManager::activateSystemGroup(secs::SystemGroupIndex sgi)
 {
-    assert( sgi >= 0 && sgi < MaxSystemGroups );
+    assert( sgi < MaxSystemGroups );
     assert( m_systemsByGroup[sgi] == nullptr && "System group already activated!" );
     m_systemsByGroup[sgi] = new std::vector<System::Ptr>();
 }
@@ -73,7 +73,7 @@ void secs::SystemManager::activateSystemGroup(secs::SystemGroupIndex sgi)
 void secs::SystemManager::setSystemGroup(secs::System::Ptr system, secs::SystemGroupIndex group)
 {
     assert( m_systemsByGroup != nullptr && "System group not activated! Use activateSystemGroup.");
-    assert( group >= 0 && group < MaxSystemGroups );
+    assert( group < MaxSystemGroups );
     m_systemsByGroup[group]->push_back(system);
 }
 

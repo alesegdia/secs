@@ -78,7 +78,7 @@ public:
 
 	void deactivate( const Entity e )
 	{
-
+        SECS_UNUSED(e);
 	}
 
 private:

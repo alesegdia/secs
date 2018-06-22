@@ -51,12 +51,13 @@ public:
 
     virtual void process( double delta, const Entity& e )
     {
-
+        SECS_UNUSED(delta);
+        SECS_UNUSED(e);
     }
 
     virtual void render( const Entity& e )
     {
-
+        SECS_UNUSED(e);
     }
 
 	void setComponentFlagsManager( ComponentFlagsManager::Ptr cfm );
@@ -125,10 +126,7 @@ public:
         process( delta, e, component<Args>(e)... );
     }
 
-    virtual void process(double delta, const secs::Entity& e, Args&... args )
-	{
-
-    }
+    virtual void process(double delta, const secs::Entity& e, Args&... args ) = 0;
 
 private:
     ComponentManager::Ptr m_componentManager;
