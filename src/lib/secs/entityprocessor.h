@@ -143,6 +143,12 @@ private:
 		change_list.sort();
 		change_list.unique();
 
+        // remove duplicates
+        auto& v = m_removedEntities;
+        std::sort(v.begin(), v.end());
+        auto last = std::unique(v.begin(), v.end());
+        v.erase(last, v.end());
+
 		std::vector<Entity> change_vector { std::begin( change_list ), std::end( change_list ) } ;
 		std::sort( change_vector.begin(), change_vector.end() );
 		std::sort( m_addedEntities.begin(), m_addedEntities.end() );
