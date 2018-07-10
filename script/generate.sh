@@ -44,7 +44,7 @@ function regenerate_headers {
 }
 
 if [ "$CMD" == "newcomponent" ]; then
-	COMPONENT_FILE="${FOLDER}/component/${ARG,,}component.h"
+	COMPONENT_FILE="${FOLDER}/component/${ARG,,}.h"
 	if [ -f $COMPONENT_FILE ]; then
 		echo "Error trying to create component! File $COMPONENT_FILE already exists!"
 	fi
@@ -54,14 +54,14 @@ if [ "$CMD" == "newcomponent" ]; then
 		exit
 	fi
 	
-	echo "Creating new component ${ARG}Component"
+	echo "Creating new component ${ARG}"
 	
-	COMPONENT_SOURCE="#pragma once\n\nstruct ${ARG}Component\n{\n\n};"
+	COMPONENT_SOURCE="#pragma once\n\nstruct ${ARG}\n{\n\n};"
 	echo -e $COMPONENT_SOURCE > ${COMPONENT_FILE}
 fi
 
 if [ "$CMD" == "newsystem" ]; then
-	SYSTEM_FILE="${FOLDER}/system/${ARG,,}system.h"
+	SYSTEM_FILE="${FOLDER}/system/${ARG,,}.h"
 	if [ -f $SYSTEM_FILE ]; then
 		echo "Error trying to create system! File $SYSTEM_FILE already exists!"
 		exit
@@ -95,15 +95,15 @@ if [ "$CMD" == "newsystem" ]; then
 	
 	echo "Generating system at $SYSTEM_FILE..."
 	
-	SYSTEM_SOURCE="
-#pragma once
+	SYSTEM_SOURCE="#pragma once
 
 #include <secs/secs.h>
+#include \"../components.h\"
 
-class ${ARG}System : public secs::TypedEntitySystem<${REQUIREMENTS_LINE}>
+class ${ARG} : public secs::TypedEntitySystem<${REQUIREMENTS_LINE}>
 {
 public:
-	void process( ${REQUIREMENTS_PROCESS} )
+	void process( double delta, const secs::Entity& e, ${REQUIREMENTS_PROCESS} )
 	{
 	
 	}
