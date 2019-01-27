@@ -21,7 +21,9 @@ add_library(secscore ${LIB_SRC})
 
 file(GLOB tests RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/test/*.cpp)
 
-foreach(test ${tests})
-	get_filename_component(testName ${test} NAME_WE)
-	addTests(${testName} ${test} "src/lib;module/xstf/src" "secscore;xstf")
-endforeach()
+if(0)
+	foreach(test ${tests})
+		get_filename_component(testName ${test} NAME_WE)
+		addTests(${testName} ${test} "src/lib;module/xstf/src" "secscore;xstf")
+	endforeach()
+endif()
