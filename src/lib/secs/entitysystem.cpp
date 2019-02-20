@@ -97,3 +97,5 @@ void secs::EntitySystem::add(const secs::Entity &entity)
 	m_activeEntities.push_back( entity );
 	onAdded( entity );
 }
+
+

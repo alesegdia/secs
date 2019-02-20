@@ -121,6 +121,11 @@ public:
 		setNeededComponents<Args...>();
 	}
 
+    virtual ~TypedEntitySystem()
+    {
+
+    }
+
     void process( double delta, const secs::Entity& e ) final
     {
         process( delta, e, component<Args>(e)... );
