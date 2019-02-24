@@ -37,7 +37,7 @@ public:
 
 	// System interface
     virtual void step(double delta) final ;
-    virtual void renderStep() final ;
+    virtual void renderStep() override ;
 
 	// EntityObserver interface
 	void added( const std::vector<Entity> &entities ) final ;
@@ -99,10 +99,10 @@ private:
 
 	ComponentBits m_neededComponents;
 	EntityBits m_entityBits;
-	std::list<Entity> m_activeEntities;
-	ComponentFlagsManager::Ptr m_componentFlagsManager;
+    std::list<Entity> m_activeEntities;
+    ComponentFlagsManager::Ptr m_componentFlagsManager;
 	EntityProcessor::Ptr m_entityProcessor;
-	ComponentManager::Ptr m_componentManager;
+    ComponentManager::Ptr m_componentManager;
 
 };
 

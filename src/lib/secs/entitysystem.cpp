@@ -94,7 +94,7 @@ void secs::EntitySystem::add(const secs::Entity &entity)
 {
 	size_t pos = size_t(entity.eid());
     m_entityBits.set( pos, true );
-	m_activeEntities.push_back( entity );
+    m_activeEntities.push_back( entity );
 	onAdded( entity );
 }
 
