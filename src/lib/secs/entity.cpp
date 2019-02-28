@@ -1,5 +1,7 @@
 #include "entity.h"
 
+#include <cassert>
+
 namespace secs {
 
 Entity::Entity(Entity::eid_t id)
@@ -16,6 +18,7 @@ Entity::Entity()
 
 Entity::eid_t Entity::eid() const
 {
+    assert(m_eid != InvalidEntity);
 	return m_eid;
 }
 
