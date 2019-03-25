@@ -80,6 +80,12 @@ public:
 	{
         SECS_UNUSED(e);
 	}
+    
+    template <typename T>
+    bool hasComponent(const secs::Entity& e)
+    {
+        return m_componentFlagsManager.hasComponent<T>(e);
+    }
 
 private:
 

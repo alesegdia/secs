@@ -75,6 +75,7 @@ public:
 	template <typename ComponentType>
 	ComponentType& addComponent( const Entity& entity )
 	{
+        assert(false == m_componentFlagsManager.hasComponent<ComponentType>(entity));
         auto storage = m_componentManager.componentStorage<ComponentType>();
         if( false == m_componentFlagsManager.hasComponent<ComponentType>(entity) )
         {
