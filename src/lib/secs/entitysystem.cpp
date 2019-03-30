@@ -2,9 +2,7 @@
 #include "entitysystem.h"
 
 secs::EntitySystem::~EntitySystem()
-{
-
-}
+= default;
 
 void secs::EntitySystem::added(const std::vector<secs::Entity> &entities)
 {

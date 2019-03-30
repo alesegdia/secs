@@ -64,7 +64,7 @@ private:
 
 	ComponentFlagsManager& m_flagsManager;
 
-    std::vector<System::Ptr>* m_systemsByGroup[MaxSystemGroups];
+    std::vector<System::Ptr>* m_systemsByGroup[MaxSystemGroups]{};
 
 };
 

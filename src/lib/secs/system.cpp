@@ -3,9 +3,7 @@
 #include "config.h"
 
 secs::System::~System()
-{
-
-}
+= default;
 
 void secs::System::step(double delta)
 {

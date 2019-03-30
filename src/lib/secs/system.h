@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 namespace secs
 {
 
@@ -7,7 +9,7 @@ class System
 {
 public:
 
-	typedef System* Ptr;
+    typedef std::shared_ptr<System> Ptr;
 
 	virtual ~System();
 

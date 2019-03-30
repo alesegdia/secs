@@ -19,7 +19,7 @@ class EntitySystem : public System, public EntityObserver
 {
 public:
 
-	typedef EntitySystem* Ptr;
+    typedef std::shared_ptr<EntitySystem> Ptr;
 
 	template <typename... Args>
 	void setNeededComponents ()

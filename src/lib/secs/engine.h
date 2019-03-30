@@ -23,7 +23,7 @@ public:
 
     void pushSystem( System::Ptr system )
 	{
-        EntitySystem::Ptr entity_system = dynamic_cast<EntitySystem::Ptr>( system );
+        EntitySystem::Ptr entity_system = std::dynamic_pointer_cast<EntitySystem>( system );
         if( nullptr != entity_system )
         {
             entity_system->setComponentFlagsManager( &m_componentFlagsManager );
