@@ -38,6 +38,18 @@ function build_header_file {
 	echo -e "$HEADER" > ${FOLDER}/${SUBFOLDER}s.h
 }
 
+function build_prefab {
+	echo -e "#pragma once"$'\n'
+	echo -e "struct ECSPrefab {"$'\n'
+	for element in $FOLDER/component/*.h; do
+		grep -oP "struct (.*)Component" $element | while read -r line; do
+			COMPONENTNAME=$(echo $line | cut -d " " -f2)
+			echo -e "\t$COMPONENTNAME* m_$COMPONENTNAME;"
+		done
+	done
+	echo -e "}"
+}
+
 function regenerate_headers {
 	build_header_file system
 	build_header_file component
@@ -114,3 +126,4 @@ public:
 fi
 
 regenerate_headers
+build_prefab
