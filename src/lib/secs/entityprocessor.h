@@ -72,10 +72,16 @@ public:
 
 	}
 
-	template <typename ComponentType>
-	ComponentType& addComponent( const Entity& entity )
-	{
+    template <typename ComponentType>
+    ComponentType& addComponent( const Entity& entity )
+    {
         assert(false == m_componentFlagsManager.hasComponent<ComponentType>(entity));
+        return addOrRetrieveComponent<ComponentType>(entity);
+    }
+
+    template <typename ComponentType>
+    ComponentType& addOrRetrieveComponent( const Entity& entity )
+    {
         auto storage = m_componentManager.componentStorage<ComponentType>();
         if( false == m_componentFlagsManager.hasComponent<ComponentType>(entity) )
         {
@@ -83,10 +89,10 @@ public:
             m_componentEdits.push_back( ComponentEdit( entity, ComponentEdit::Type::AddComponent, component_index ));
             storage->allocComponent( entity );
         }
-		return storage->component( entity );
-	}
+        return storage->component( entity );
+    }
 
-	template <typename ComponentType>
+    template <typename ComponentType>
 	ComponentType& removeComponent( const Entity& entity )
 	{
 		auto storage = m_componentManager.componentStorage<ComponentType>();
@@ -120,6 +126,18 @@ public:
     int numEntities()
     {
         return m_numEntities;
+    }
+
+    template <typename ComponentType>
+    ComponentType& component(const secs::Entity& e)
+    {
+        return m_componentManager.component<ComponentType>(e);
+    }
+
+    template <typename ComponentType>
+    bool hasComponent(const secs::Entity& e)
+    {
+        return m_componentFlagsManager.hasComponent<ComponentType>(e);
     }
 
 private:
