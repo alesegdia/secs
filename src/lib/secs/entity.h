@@ -18,7 +18,7 @@ public:
 
 	eid_t eid() const;
 
-    bool isValid();
+    bool isValid() const;
 
     void invalidate();
 

@@ -75,6 +75,7 @@ public:
     template <typename ComponentType>
     ComponentType& addComponent( const Entity& entity )
     {
+		assert(entity.isValid());
         assert(false == m_componentFlagsManager.hasComponent<ComponentType>(entity));
         return addOrRetrieveComponent<ComponentType>(entity);
     }
@@ -139,6 +140,11 @@ public:
     {
         return m_componentFlagsManager.hasComponent<ComponentType>(e);
     }
+
+	void forceApplyChanges()
+	{
+		applyChanges();
+	}
 
 private:
 

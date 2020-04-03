@@ -65,6 +65,12 @@ public:
 		return m_componentManager.componentStorage<ComponentType>()->component(e);
 	}
 
+    template <typename ComponentType>
+    ComponentType& addComponent(const Entity& e)
+    {
+        return processor().addComponent<ComponentType>(e);
+    }
+
     void step( double delta )
 	{
 		m_entityProcessor.applyChanges();

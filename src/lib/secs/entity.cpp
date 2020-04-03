@@ -22,7 +22,7 @@ Entity::eid_t Entity::eid() const
 	return m_eid;
 }
 
-bool Entity::isValid()
+bool Entity::isValid() const
 {
     return m_eid != InvalidEntity;
 }
