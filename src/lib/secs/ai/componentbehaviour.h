@@ -1,6 +1,6 @@
 #pragma once
 
-#include <secs/secs.h>
+#include "../secs.h"
 
 
 namespace secs {
