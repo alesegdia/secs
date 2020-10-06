@@ -21,6 +21,14 @@ public:
 
     }
 
+    template <typename T, typename... Args>
+    std::shared_ptr<T> createSystem(Args&&... args)
+    {
+        auto sys = std::make_shared<T>(args...);
+        pushSystem(sys);
+        return sys;
+    }
+
     void pushSystem( System::Ptr system )
 	{
         EntitySystem::Ptr entity_system = std::dynamic_pointer_cast<EntitySystem>( system );
