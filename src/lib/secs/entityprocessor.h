@@ -124,6 +124,11 @@ public:
 		m_deactivatedEntities.push_back( entity );
 	}
 
+	std::vector<eid_t> ValidEntities()
+	{
+		return m_eidStorage.validEntities();
+	}
+
     int numEntities()
     {
         return m_numEntities;

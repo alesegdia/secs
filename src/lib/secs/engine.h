@@ -1,5 +1,8 @@
 #pragma once
 
+#include <algorithm>
+#include <functional>
+
 #include "entity.h"
 #include "systemmanager.h"
 #include "componentmanager.h"
@@ -14,11 +17,21 @@ public:
 
 	typedef Engine* Ptr;
 
+    using EntityVisitor = std::function<void(const secs::Entity& e)>;
+
 	Engine()
 		: m_systemManager( m_componentFlagsManager ),
 		  m_entityProcessor( m_systemManager, m_componentManager, m_componentFlagsManager )
 	{
 
+    }
+
+    void Visit(EntityVisitor v)
+    {
+        for (auto e : processor().ValidEntities())
+        {
+            v(Entity(e));
+        }
     }
 
     template <typename T, typename... Args>

@@ -2,6 +2,7 @@
 
 #include <stack>
 #include <cstdlib>
+#include <vector>
 
 #include "entity.h"
 
@@ -22,8 +23,14 @@ public:
 
 	const std::stack<eid_t>& recycledStack() const;
 
+	std::vector<eid_t> validEntities()
+	{
+		return m_validEntities;
+	}
+
 private:
 	std::stack<eid_t> m_recycledEIDs;
+	std::vector<eid_t> m_validEntities;
 	eid_t m_lastEID = 0;
 
 };

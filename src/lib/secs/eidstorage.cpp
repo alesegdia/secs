@@ -16,11 +16,14 @@ eid_t EIDStorage::retrieve()
 	{
 		eid = m_lastEID++;
 	}
+	m_validEntities.push_back(eid);
 	return eid;
 }
 
 void EIDStorage::recycle( Entity entity )
 {
+	auto& v = m_validEntities;
+	v.erase(std::remove(v.begin(), v.end(), entity.eid()), v.end());
 	m_recycledEIDs.push( secs::eid_t(entity.eid()) );
 }
 

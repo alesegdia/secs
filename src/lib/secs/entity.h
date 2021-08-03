@@ -6,11 +6,11 @@
 namespace secs
 {
 
-typedef std::uint32_t eid_t;
+typedef uint32_t eid_t;
 
 class Entity {
 public:
-    using eid_t = std::uint64_t;
+    using eid_t = uint64_t;
     static constexpr eid_t InvalidEntity = std::numeric_limits<eid_t>::max();
 
 	Entity( eid_t id );
