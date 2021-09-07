@@ -55,7 +55,7 @@ The framework will need the systems to be created and inserted at start. Then, i
 Some entity related operations can be requested inside it. These operations won't be performed right away, but instead the framework will wait for all the systems to end, and then, perform all entity operations and notify systems when applicable.
 
 <center>
-![lifecycle](lifecycle.png "Framework life cycle")
+![lifecycle](doc/lifecycle.png "Framework life cycle")
 </center>
 
 ### 5.2. System notification
@@ -71,7 +71,7 @@ Systems will have a bitset to query which entities are present in the system and
 The following flowchart resembles this logic:
 
 <center>
-![lifecycle](system-notifications.png "Framework life cycle")
+![lifecycle](doc/system-notifications.png "Framework life cycle")
 </center>
 
 
@@ -94,7 +94,7 @@ An example to illustrate this is a shooting system which purpose is to spawn bul
 When an entity is created, a free ID from a pool is attached to it. The operation is annotated so that we can notify systems later.
 
 <center>
-![entop-creation](entop-creation.png "Entity creation")
+![entop-creation](doc/entop-creation.png "Entity creation")
 </center>
 
 
@@ -103,7 +103,7 @@ When an entity is created, a free ID from a pool is attached to it. The operatio
 When an entity is removed, the operation is just annotated and nothing is done. Instead, the removal of all components and the entity itself will be done at the edit processing step later. This is because systems may need to perform some operations on these entities on removal. As an example, a PhysicSystem might want to remove the body from the physics world.
 
 <center>
-![entop-deletion-step](entop-deletion-step.png "Entity destruction")
+![entop-deletion-step](doc/entop-deletion-step.png "Entity destruction")
 </center>
 
 
@@ -114,7 +114,7 @@ When a component is added to an entity, the component is actually allocated and 
 **NOTE:** this could be changed, since there might be no reason for not updating entity bits here. The systems notification will still need to wait for the entity edit processing step.
 
 <center>
-![entop-compadd-step](entop-compadd-step.png "Component addition to entity")
+![entop-compadd-step](doc/entop-compadd-step.png "Component addition to entity")
 </center>
 
 #### Component deletion from entity
@@ -122,7 +122,7 @@ When a component is added to an entity, the component is actually allocated and 
 When an component is removed from an entity in the system loop, nothing is done really. Instead, the operation is annotated and delayed back to the entity edit processing step, in order to correctly notify systems.
 
 <center>
-![entop-compdel-step](entop-compdel-step.png "Component deletion from entity")
+![entop-compdel-step](doc/entop-compdel-step.png "Component deletion from entity")
 </center>
 
 #### Entity processor
@@ -136,5 +136,5 @@ Component removal will be done partially so that only entity bits will be update
 Then, all systems will be notified about changed, added and removed entities, and finally, components will be freed.
 
 <center>
-![entop-compdel-step](entop-processing.png "Entity edit processing")
+![entop-compdel-step](doc/entop-processing.png "Entity edit processing")
 </center>
