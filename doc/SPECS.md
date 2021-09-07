@@ -55,7 +55,7 @@ The framework will need the systems to be created and inserted at start. Then, i
 Some entity related operations can be requested inside it. These operations won't be performed right away, but instead the framework will wait for all the systems to end, and then, perform all entity operations and notify systems when applicable.
 
 <center>
-![lifecycle](doc/lifecycle.png "Framework life cycle")
+![lifecycle](/doc/lifecycle.png "Framework life cycle")
 </center>
 
 ### 5.2. System notification
