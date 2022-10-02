@@ -28,7 +28,7 @@ public:
 
     void Visit(EntityVisitor v)
     {
-        for (auto e : processor().ValidEntities())
+        for (auto e : GetEntityProcessor().ValidEntities())
         {
             v(Entity(e));
         }
