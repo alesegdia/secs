@@ -5,63 +5,63 @@
 secs::System::~System()
 = default;
 
-void secs::System::step(double delta)
+void secs::System::Step(double delta)
 {
     SECS_UNUSED(delta);
 }
 
-void secs::System::renderStep()
+void secs::System::RenderStep()
 {
 
 }
 
-void secs::System::preUpdate(double delta)
-{
-    SECS_UNUSED(delta);
-}
-
-void secs::System::postUpdate(double delta)
+void secs::System::PreUpdate(double delta)
 {
     SECS_UNUSED(delta);
 }
 
-void secs::System::setStepConfiguration(bool process_step, bool render_step)
+void secs::System::PostUpdate(double delta)
+{
+    SECS_UNUSED(delta);
+}
+
+void secs::System::SetStepConfiguration(bool process_step, bool render_step)
 {
     m_hasProcessingStep = process_step;
     m_hasRenderingStep = render_step;
 }
 
-void secs::System::enable()
+void secs::System::Enable()
 {
     m_isEnabled = true;
 }
 
-void secs::System::disable()
+void secs::System::Disable()
 {
     m_isEnabled = false;
 }
 
-bool secs::System::isEnabled()
+bool secs::System::IsEnabled()
 {
     return m_isEnabled;
 }
 
-bool secs::System::hasProcessingStep()
+bool secs::System::HasProcessingStep()
 {
     return m_hasProcessingStep;
 }
 
-bool secs::System::hasRenderingStep()
+bool secs::System::HasRenderingStep()
 {
     return m_hasRenderingStep;
 }
 
-int secs::System::executionPriority()
+int secs::System::GetExecutionPriority()
 {
     return m_executionPriority;
 }
 
-void secs::System::setExecutionPriority(int priority)
+void secs::System::SetExecutionPriority(int priority)
 {
     m_executionPriority = priority;
 }

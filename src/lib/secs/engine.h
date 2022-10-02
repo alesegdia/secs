@@ -22,83 +22,83 @@ public:
     }
 
     template <typename T, typename... Args>
-    std::shared_ptr<T> createSystem(Args&&... args)
+    std::shared_ptr<T> CreateSystem(Args&&... args)
     {
         auto sys = std::make_shared<T>(args...);
-        pushSystem(sys);
+        PushSystem(sys);
         return sys;
     }
 
-    void pushSystem( System::Ptr system )
+    void PushSystem( System::Ptr system )
 	{
         EntitySystem::Ptr entity_system = std::dynamic_pointer_cast<EntitySystem>( system );
         if( nullptr != entity_system )
         {
-            entity_system->setComponentFlagsManager( &m_componentFlagsManager );
-            entity_system->setEntityProcessor( &m_entityProcessor );
-            entity_system->setComponentManager( &m_componentManager );
+            entity_system->SetComponentFlagsManager( &m_componentFlagsManager );
+            entity_system->SetEntityProcessor( &m_entityProcessor );
+            entity_system->SetComponentManager( &m_componentManager );
         }
 
-        m_systemManager.pushSystem( system, entity_system );
+        m_systemManager.PushSystem( system, entity_system );
 	}
 
-    void setSystemGroup( System::Ptr system, SystemGroupIndex group )
+    void SetSystemGroup( System::Ptr system, SystemGroupIndex group )
     {
-        m_systemManager.setSystemGroup( system, group );
+        m_systemManager.SetSystemGroup( system, group );
     }
 
-    void disableGroup( SystemGroupIndex sgi )
+    void DisableGroup( SystemGroupIndex sgi )
     {
-        m_systemManager.disableSystemGroup(sgi);
+        m_systemManager.DisableSystemGroup(sgi);
     }
 
-    void enableGroup( SystemGroupIndex sgi )
+    void EnableGroup( SystemGroupIndex sgi )
     {
-        m_systemManager.enableSystemGroup(sgi);
+        m_systemManager.EnableSystemGroup(sgi);
     }
 
-    void activateSystemGroup( SystemGroupIndex sgi)
+    void ActivateSystemGroup( SystemGroupIndex sgi)
     {
-        m_systemManager.activateSystemGroup(sgi);
+        m_systemManager.ActivateSystemGroup(sgi);
     }
 
-	EntityProcessor& processor()
+	EntityProcessor& GetEntityProcessor()
 	{
 		return m_entityProcessor;
 	}
 
 	template <typename ComponentType>
-	ComponentType& component( const Entity& e )
+	ComponentType& GetComponent( const Entity& e )
 	{
-		return m_componentManager.componentStorage<ComponentType>()->component(e);
+		return m_componentManager.GetComponentStorageForComponentType<ComponentType>()->GetComponent(e);
 	}
 
     template <typename ComponentType>
-    ComponentType& addComponent(const Entity& e)
+    ComponentType& AddComponent(const Entity& e)
     {
-        return processor().addComponent<ComponentType>(e);
+        return GetEntityProcessor().AddComponent<ComponentType>(e);
     }
 
-    void step( double delta )
+    void Step( double delta )
 	{
-		m_entityProcessor.applyChanges();
-		m_systemManager.step( delta );
+		m_entityProcessor.ApplyChanges();
+		m_systemManager.Step( delta );
 	}
 
-	void render()
+	void Render()
 	{
-		m_systemManager.render();
+		m_systemManager.Render();
 	}
 
-	void deactivate( const Entity e )
+	void Deactivate( const Entity e )
 	{
         SECS_UNUSED(e);
 	}
     
     template <typename T>
-    bool hasComponent(const secs::Entity& e)
+    bool HasComponent(const secs::Entity& e)
     {
-        return m_componentFlagsManager.hasComponent<T>(e);
+        return m_componentFlagsManager.HasComponent<T>(e);
     }
 
 private:

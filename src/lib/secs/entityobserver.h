@@ -15,9 +15,9 @@ public:
 
 	virtual ~EntityObserver() = 0;
 
-	virtual void changed( const std::vector<Entity>& entities ) = 0 ;
-	virtual void added( const std::vector<Entity>& entities ) = 0 ;
-	virtual void removed( const std::vector<Entity>& entities ) = 0 ;
+	virtual void OnEntitiesChanged( const std::vector<Entity>& entities ) = 0 ;
+	virtual void OnEntitiesAdded( const std::vector<Entity>& entities ) = 0 ;
+	virtual void OnEntitiesRemoved( const std::vector<Entity>& entities ) = 0 ;
 
 };
 

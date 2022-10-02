@@ -23,26 +23,13 @@ public:
 		AddComponent
 	};
 
-	ComponentEdit( const Entity& entity, Type type, ctindex_t index )
-		: m_entity(entity), m_type(type), m_index(index)
-	{
+	ComponentEdit( const Entity& entity, Type type, ctindex_t index );
 
-	}
+	Type GetType();
 
-	Type type()
-	{
-		return m_type;
-	}
+	ctindex_t GetIndex();
 
-	ctindex_t index()
-	{
-		return m_index;
-	}
-
-	const Entity& entity()
-	{
-		return m_entity;
-	}
+	const Entity& GetEntity();
 
 private:
 	Entity m_entity;
@@ -63,145 +50,68 @@ public:
 
 	typedef EntityProcessor* Ptr;
 
-    EntityProcessor( EntityObserver& system_manager, ComponentManager& component_manager, ComponentFlagsManager& component_flags_manager )
-	    : m_systemManager(system_manager),
-		  m_componentManager(component_manager),
-          m_componentFlagsManager(component_flags_manager),
-          m_numEntities(0)
-	{
-
-	}
+    EntityProcessor( EntityObserver& system_manager, ComponentManager& component_manager, ComponentFlagsManager& component_flags_manager );
 
     template <typename ComponentType>
-    ComponentType& addComponent( const Entity& entity )
+    ComponentType& AddComponent( const Entity& entity )
     {
-		assert(entity.isValid());
-        assert(false == m_componentFlagsManager.hasComponent<ComponentType>(entity));
-        return addOrRetrieveComponent<ComponentType>(entity);
+		assert(entity.IsValid());
+        assert(false == m_componentFlagsManager.HasComponent<ComponentType>(entity));
+        return AddOrRetrieveComponent<ComponentType>(entity);
     }
 
     template <typename ComponentType>
-    ComponentType& addOrRetrieveComponent( const Entity& entity )
+    ComponentType& AddOrRetrieveComponent( const Entity& entity )
     {
-        auto storage = m_componentManager.componentStorage<ComponentType>();
-        if( false == m_componentFlagsManager.hasComponent<ComponentType>(entity) )
+        auto storage = m_componentManager.GetComponentStorageForComponentType<ComponentType>();
+        if( false == m_componentFlagsManager.HasComponent<ComponentType>(entity) )
         {
-            ctindex_t component_index = ComponentTraits::getIndex<ComponentType>();
+            ctindex_t component_index = ComponentTraits::GetIndexForComponentType<ComponentType>();
             m_componentEdits.push_back( ComponentEdit( entity, ComponentEdit::Type::AddComponent, component_index ));
-            storage->allocComponent( entity );
+            storage->AllocComponent( entity );
         }
-        return storage->component( entity );
+        return storage->GetComponent( entity );
     }
 
     template <typename ComponentType>
-	ComponentType& removeComponent( const Entity& entity )
+	ComponentType& RemoveComponent( const Entity& entity )
 	{
-		auto storage = m_componentManager.componentStorage<ComponentType>();
-        if( true == m_componentFlagsManager.hasComponent<ComponentType>(entity) )
+		auto storage = m_componentManager.GetComponentStorageForComponentType<ComponentType>();
+        if( true == m_componentFlagsManager.HasComponent<ComponentType>(entity) )
         {
-            m_componentEdits.push_back( ComponentEdit( entity, ComponentEdit::Type::RemoveComponent, ComponentTraits::getIndex<ComponentType>() ));
+            m_componentEdits.push_back( ComponentEdit( entity, ComponentEdit::Type::RemoveComponent, ComponentTraits::GetIndexForComponentType<ComponentType>() ));
         }
-		return storage->component( entity );
+		return storage->GetComponent( entity );
 	}
 
-	void removeEntity( const Entity& entity )
-	{
-        m_numEntities--;
-		m_removedEntities.push_back( entity );
-	}
+	void RemoveEntity( const Entity& entity );
 
-	Entity addEntity()
-	{
-        m_numEntities++;
-		Entity entity = m_eidStorage.retrieve();
-		m_addedEntities.push_back( entity );
-		m_componentFlagsManager.reset( entity );
-		return entity;
-	}
+	Entity AddEntity();
 
-	void deactivateEntity( const Entity& entity )
+	void DeactivateEntity( const Entity& entity )
 	{
 		m_deactivatedEntities.push_back( entity );
 	}
 
-    int numEntities()
+    int GetNumEntities();
+
+    template <typename ComponentType>
+    ComponentType& Component(const secs::Entity& e)
     {
-        return m_numEntities;
+        return m_componentManager.GetComponentForEntity<ComponentType>(e);
     }
 
     template <typename ComponentType>
-    ComponentType& component(const secs::Entity& e)
+    bool HasComponent(const secs::Entity& e)
     {
-        return m_componentManager.component<ComponentType>(e);
+        return m_componentFlagsManager.HasComponent<ComponentType>(e);
     }
 
-    template <typename ComponentType>
-    bool hasComponent(const secs::Entity& e)
-    {
-        return m_componentFlagsManager.hasComponent<ComponentType>(e);
-    }
-
-	void forceApplyChanges()
-	{
-		applyChanges();
-	}
+	void ForceApplyChanges();
 
 private:
 
-	void applyChanges()
-	{
-		std::list<Entity> change_list;
-		for( ComponentEdit& edit : m_componentEdits )
-		{
-			change_list.push_back( edit.entity() );
-			switch( edit.type() )
-			{
-			case ComponentEdit::Type::AddComponent:
-				m_componentFlagsManager.setComponentFlag( edit.entity(), edit.index() );
-				break;
-			case ComponentEdit::Type::RemoveComponent:
-				m_componentFlagsManager.clearComponentFlag( edit.entity(), edit.index() );
-				break;
-			}
-		}
-
-		change_list.sort();
-		change_list.unique();
-
-        // remove duplicates
-        auto& v = m_removedEntities;
-        std::sort(v.begin(), v.end());
-        auto last = std::unique(v.begin(), v.end());
-        v.erase(last, v.end());
-
-		std::vector<Entity> change_vector { std::begin( change_list ), std::end( change_list ) } ;
-		std::sort( change_vector.begin(), change_vector.end() );
-		std::sort( m_addedEntities.begin(), m_addedEntities.end() );
-
-		// we discard created entities from the change set because systems will already be notified
-		// from m_addedEntities. We could remove this computation from here and let the system manager to
-		// perform the difference computation, and pass all 3 sets without filtering at once
-		// SystemManager::update( changed, added, removed )
-		std::vector<Entity> filtered_change_vector;
-		std::set_difference( change_vector.begin(), change_vector.end(),
-							 m_addedEntities.begin(), m_addedEntities.end(),
-							 std::back_inserter( filtered_change_vector ));
-
-		m_systemManager.changed( filtered_change_vector );
-		m_systemManager.added( m_addedEntities );
-		m_systemManager.removed( m_removedEntities );
-
-		for( auto entity : m_removedEntities )
-		{
-			m_eidStorage.recycle( entity );
-			m_componentFlagsManager.clearAllFlags(entity);
-		}
-
-		m_addedEntities.clear();
-		m_removedEntities.clear();
-		m_deactivatedEntities.clear();
-		m_componentEdits.clear();
-	}
+	void ApplyChanges();
 
     EntityObserver& m_systemManager;
 	ComponentManager& m_componentManager;

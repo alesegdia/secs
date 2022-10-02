@@ -22,80 +22,70 @@ public:
     typedef std::shared_ptr<EntitySystem> Ptr;
 
 	template <typename... Args>
-	void setNeededComponents ()
+	void SetNeededComponents ()
 	{
-		m_neededComponents = ComponentBitsBuilder<Args...>::buildBits();
+		m_neededComponents = ComponentBitsBuilder<Args...>::BuildBits();
 	}
 
 	template <typename... Args>
-	void addNeededComponents ()
+	void AddNeededComponents ()
 	{
-		m_neededComponents |= ComponentBitsBuilder<Args...>::buildBits();
+		m_neededComponents |= ComponentBitsBuilder<Args...>::BuildBits();
 	}
 
 	~EntitySystem() = 0;
 
 	// System interface
-    virtual void step(double delta) final ;
-    virtual void renderStep() override ;
+    void Step(double delta) final ;
+    void RenderStep() override ;
 
 	// EntityObserver interface
-	void added( const std::vector<Entity> &entities ) final ;
-	void removed( const std::vector<Entity> &entities ) final ;
-	void changed( const std::vector<Entity> &entities ) final ;
+	void OnEntitiesAdded( const std::vector<Entity> &entities ) final ;
+	void OnEntitiesRemoved( const std::vector<Entity> &entities ) final ;
+	void OnEntitiesChanged( const std::vector<Entity> &entities ) final ;
 
-	virtual bool acceptsEntity( const Entity& entity );
+	virtual bool AcceptsEntity( const Entity& entity );
 
-	virtual void onAdded( const Entity& e );
-    virtual void onRemoved( const Entity& e );
+	virtual void OnEntityAdded( const Entity& e );
+    virtual void OnEntityRemoved( const Entity& e );
 
-    virtual void process( double delta, const Entity& e )
-    {
-        SECS_UNUSED(delta);
-        SECS_UNUSED(e);
-    }
+    virtual void Process( double delta, const Entity& e );
 
-    virtual void render( const Entity& e )
-    {
-        SECS_UNUSED(e);
-    }
+    virtual void Render( const Entity& e );
 
-	void setComponentFlagsManager( ComponentFlagsManager::Ptr cfm );
-    void setEntityProcessor( EntityProcessor::Ptr processor )
+	void SetComponentFlagsManager( ComponentFlagsManager::Ptr cfm );
+    void SetEntityProcessor( EntityProcessor::Ptr processor )
     {
         m_entityProcessor = processor;
     }
-    void setComponentManager( ComponentManager::Ptr component_manager ) {
+    void SetComponentManager( ComponentManager::Ptr component_manager ) {
         m_componentManager = component_manager;
     }
 
     template <typename ComponentType>
-    ComponentType& addComponent(const secs::Entity& e)
+    ComponentType& AddComponent(const secs::Entity& e)
     {
-        return m_entityProcessor->addComponent<ComponentType>(e);
+        return m_entityProcessor->AddComponent<ComponentType>(e);
     }
 
 protected:
-    EntityProcessor::Ptr processor()
-    {
-        return m_entityProcessor;
-    }
+    EntityProcessor::Ptr GetEntityProcessor();
 
 	template <typename ComponentType>
-	ComponentType& component( const Entity& e )
+	ComponentType& GetComponent( const Entity& e )
 	{
-		return m_componentManager->component<ComponentType>(e);
+		return m_componentManager->GetComponentForEntity<ComponentType>(e);
 	}
 
     template <typename ComponentType>
-    bool hasComponent( const Entity& e )
+    bool HasComponent( const Entity& e )
     {
-        return m_componentFlagsManager->hasComponent<ComponentType>(e);
+        return m_componentFlagsManager->HasComponent<ComponentType>(e);
     }
 
 private:
-	void remove( const Entity& entity );
-	void add( const Entity& entity );
+	void RemoveEntity( const Entity& entity );
+	void AddEntity( const Entity& entity );
 
 	ComponentBits m_neededComponents;
 	EntityBits m_entityBits;
@@ -118,7 +108,7 @@ public:
 
 	TypedEntitySystem()
 	{
-		setNeededComponents<Args...>();
+		SetNeededComponents<Args...>();
 	}
 
     virtual ~TypedEntitySystem()
@@ -126,9 +116,9 @@ public:
 
     }
 
-    void process( double delta, const secs::Entity& e ) final
+    void Process( double delta, const secs::Entity& e ) final
     {
-        process( delta, e, component<Args>(e)... );
+        process( delta, e, GetComponent<Args>(e)... );
     }
 
     virtual void process(double delta, const secs::Entity& e, Args&... args ) = 0;

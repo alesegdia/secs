@@ -15,24 +15,24 @@ public:
 
 	typedef ComponentFlagsManager* Ptr;
 
-	void reset( const Entity& entity );
+	void ResetFlagsForEntity( const Entity& entity );
 
-	void setComponentFlag( const Entity& entity, ctindex_t index );
+	void SetComponentFlagForEntity( const Entity& entity, ctindex_t index );
 
-	void clearComponentFlag( const Entity& entity, ctindex_t index );
+	void ClearComponentFlagForEntity( const Entity& entity, ctindex_t index );
 
     template <typename ComponentType>
-    bool hasComponent( const Entity& entity )
+    bool HasComponent( const Entity& entity )
     {
-        ctindex_t component_index = ComponentTraits::getIndex<ComponentType>();
-        return componentFlags(entity)[component_index];
+        ctindex_t component_index = ComponentTraits::GetIndexForComponentType<ComponentType>();
+        return GetComponentFlagsForEntity(entity)[component_index];
     }
 
-	ComponentBits& componentFlags( const Entity& entity );
+	ComponentBits& GetComponentFlagsForEntity( const Entity& entity );
 
-    void clearAllFlags(const Entity& entity)
+    void ClearAllFlagsForEntity(const Entity& entity)
     {
-		m_entityBits[secs::eid_t(entity.eid())].reset();
+		m_entityBits[secs::eid_t(entity.GetEID())].reset();
     }
 
 private:

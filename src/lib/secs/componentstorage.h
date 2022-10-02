@@ -44,19 +44,19 @@ public:
      * @param e
      * @return the allocated component
      */
-    ComponentType& allocComponent( const Entity& e )
+    ComponentType& AllocComponent( const Entity& e )
     {
-        if( m_storage.size() < ( e.eid() + 1 ) )
+        if( m_storage.size() < ( e.GetEID() + 1 ) )
         {
-            m_storage.resize(secs::eid_t(e.eid() + 32));
+            m_storage.resize(secs::eid_t(e.GetEID() + 32));
         }
-        m_storage[secs::eid_t(e.eid())] = {};
-        return m_storage[secs::eid_t(e.eid())];
+        m_storage[secs::eid_t(e.GetEID())] = {};
+        return m_storage[secs::eid_t(e.GetEID())];
     }
 
-    ComponentType& component( const Entity& e )
+    ComponentType& GetComponent( const Entity& e )
     {
-        return m_storage[secs::eid_t(e.eid())];
+        return m_storage[secs::eid_t(e.GetEID())];
     }
 
 private:
@@ -88,16 +88,16 @@ public:
      * @param e
      * @return the allocated component
      */
-    ComponentType& allocComponent( const Entity& e )
+    ComponentType& AllocComponentForEntity( const Entity& e )
     {
-        assert(e.eid() < ArrayComponentStorage::NumEntities);
-        m_storage[e.eid()] = {};
-        return m_storage[e.eid()];
+        assert(e.GetEID() < ArrayComponentStorage::NumEntities);
+        m_storage[e.GetEID()] = {};
+        return m_storage[e.GetEID()];
     }
 
-    ComponentType& component( const Entity& e )
+    ComponentType& GetComponentForEntity( const Entity& e )
     {
-        return m_storage[e.eid()];
+        return m_storage[e.GetEID()];
     }
 
 private:

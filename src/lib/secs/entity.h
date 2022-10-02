@@ -16,11 +16,11 @@ public:
 	Entity( eid_t id );
     Entity();
 
-	eid_t eid() const;
+	eid_t GetEID() const;
 
-    bool isValid() const;
+    bool IsValid() const;
 
-    void invalidate();
+    void Invalidate();
 
 	bool operator==( const Entity& other ) ;
 	bool operator<( const Entity& other ) const;

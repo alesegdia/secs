@@ -12,15 +12,15 @@ class EIDStorage
 {
 public:
 
-	eid_t retrieve();
-	void recycle( Entity entity );
+	eid_t Retrieve();
+	void Recycle( Entity entity );
 
 	// for testing purposes
-	eid_t lastEID() const;
+	eid_t GetLastEID() const;
 
-	size_t numRecycled() const;
+	size_t GetNumRecycledEIDs() const;
 
-	const std::stack<eid_t>& recycledStack() const;
+	const std::stack<eid_t>& GetRecycledStack() const;
 
 private:
 	std::stack<eid_t> m_recycledEIDs;

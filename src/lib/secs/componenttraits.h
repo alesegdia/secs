@@ -11,18 +11,18 @@ class ComponentTraits
 {
 public:
 	template <typename T>
-	static ctflags_t getFlag() {
-		static const ctflags_t flag = pow(2, ComponentTraits::getIndex<T>());
+	static ctflags_t GetFlagForComponentType() {
+		static const ctflags_t flag = pow(2, ComponentTraits::GetIndexForComponentType<T>());
 		return flag;
 	}
 
 	template <typename T>
-	static ctindex_t getIndex() {
+	static ctindex_t GetIndexForComponentType() {
 		static const ctindex_t index = nextTypeIndex++;
 		return index;
 	}
 
-	static ctindex_t getNumComponents() {
+	static ctindex_t GetNumberOfComponents() {
 		return nextTypeIndex;
 	}
 
@@ -38,18 +38,18 @@ struct ComponentBitsBuilder;
 template <typename First, typename... Rest>
 struct ComponentBitsBuilder<First, Rest...>
 {
-	static ComponentBits buildBits()
+	static ComponentBits BuildBits()
 	{
 		ComponentBits b;
-		b.set(ComponentTraits::getIndex<First>());
-		return b | ComponentBitsBuilder<Rest...>::buildBits();
+		b.set(ComponentTraits::GetIndexForComponentType<First>());
+		return b | ComponentBitsBuilder<Rest...>::BuildBits();
 	}
 };
 
 template <>
 struct ComponentBitsBuilder<>
 {
-	static ComponentBits buildBits()
+	static ComponentBits BuildBits()
 	{
 		return ComponentBits();
 	}
