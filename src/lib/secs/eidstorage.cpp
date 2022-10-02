@@ -4,7 +4,7 @@
 namespace secs {
 
 
-eid_t EIDStorage::retrieve()
+eid_t EIDStorage::Retrieve()
 {
 	eid_t eid;
 	if( !m_recycledEIDs.empty() )
@@ -20,24 +20,24 @@ eid_t EIDStorage::retrieve()
 	return eid;
 }
 
-void EIDStorage::recycle( Entity entity )
+void EIDStorage::Recycle( Entity entity )
 {
 	auto& v = m_validEntities;
-	v.erase(std::remove(v.begin(), v.end(), entity.eid()), v.end());
-	m_recycledEIDs.push( secs::eid_t(entity.eid()) );
+	v.erase(std::remove(v.begin(), v.end(), entity.GetEID()), v.end());
+	m_recycledEIDs.push( secs::eid_t(entity.GetEID()) );
 }
 
-eid_t EIDStorage::lastEID() const
+eid_t EIDStorage::GetLastEID() const
 {
 	return m_lastEID;
 }
 
-size_t EIDStorage::numRecycled() const
+size_t EIDStorage::GetNumRecycledEIDs() const
 {
 	return m_recycledEIDs.size();
 }
 
-const std::stack<eid_t> &EIDStorage::recycledStack() const
+const std::stack<eid_t> &EIDStorage::GetRecycledStack() const
 {
 	return m_recycledEIDs;
 }

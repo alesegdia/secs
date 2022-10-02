@@ -20,101 +20,101 @@ secs::SystemManager::~SystemManager()
     }
 }
 
-void secs::SystemManager::changed(const std::vector<secs::Entity> &entities)
+void secs::SystemManager::OnEntitiesChanged(const std::vector<secs::Entity> &entities)
 {
     for( auto system : m_entitySystems )
     {
-        system->changed( entities );
+        system->OnEntitiesChanged( entities );
     }
 }
 
-void secs::SystemManager::added(const std::vector<secs::Entity> &entities)
+void secs::SystemManager::OnEntitiesAdded(const std::vector<secs::Entity> &entities)
 {
     for( auto system : m_entitySystems )
 	{
-		system->added( entities );
+		system->OnEntitiesAdded( entities );
 	}
 }
 
-void secs::SystemManager::removed(const std::vector<secs::Entity> &entities)
+void secs::SystemManager::OnEntitiesRemoved(const std::vector<secs::Entity> &entities)
 {
 	for( auto system : m_entitySystems )
 	{
-		system->removed( entities );
+		system->OnEntitiesRemoved( entities );
 	}
 }
 
-void secs::SystemManager::pushSystem( secs::System::Ptr system, EntitySystem::Ptr entity_system )
+void secs::SystemManager::PushSystem( secs::System::Ptr system, EntitySystem::Ptr entity_system )
 {
     if( entity_system != nullptr)
     {
         m_entitySystems.push_back( entity_system );
 	}
 
-    if( system->hasRenderingStep() )
+    if( system->HasRenderingStep() )
 	{
         insertSorted( system, m_renderingSystems );
     }
 
-    if( system->hasProcessingStep())
+    if( system->HasProcessingStep())
     {
         insertSorted( system, m_processingSystems );
     }
 
 }
 
-void secs::SystemManager::activateSystemGroup(secs::SystemGroupIndex sgi)
+void secs::SystemManager::ActivateSystemGroup(secs::SystemGroupIndex sgi)
 {
     assert( sgi < MaxSystemGroups );
     assert( m_systemsByGroup[sgi] == nullptr && "System group already activated!" );
     m_systemsByGroup[sgi] = new std::vector<System::Ptr>();
 }
 
-void secs::SystemManager::setSystemGroup(secs::System::Ptr system, secs::SystemGroupIndex group)
+void secs::SystemManager::SetSystemGroup(secs::System::Ptr system, secs::SystemGroupIndex group)
 {
     assert( m_systemsByGroup != nullptr && "System group not activated! Use activateSystemGroup.");
     assert( group < MaxSystemGroups );
     m_systemsByGroup[group]->push_back(system);
 }
 
-void secs::SystemManager::disableSystemGroup(secs::SystemGroupIndex sgi)
+void secs::SystemManager::DisableSystemGroup(secs::SystemGroupIndex sgi)
 {
     assert( m_systemsByGroup[sgi] != nullptr );
     for( System::Ptr s : *(m_systemsByGroup[sgi]) )
     {
-        s->disable();
+        s->Disable();
     }
 }
 
-void secs::SystemManager::enableSystemGroup(secs::SystemGroupIndex sgi)
+void secs::SystemManager::EnableSystemGroup(secs::SystemGroupIndex sgi)
 {
     assert( m_systemsByGroup[sgi] != nullptr );
     for( System::Ptr s : *(m_systemsByGroup[sgi]) )
     {
-        s->enable();
+        s->Enable();
     }
 }
 
-void secs::SystemManager::step( double delta )
+void secs::SystemManager::Step( double delta )
 {
     for( System::Ptr system : m_processingSystems )
     {
-        system->preUpdate( delta );
-        if( system->isEnabled() )
+        system->PreUpdate( delta );
+        if( system->IsEnabled() )
         {
-            system->step( delta );
+            system->Step( delta );
         }
-        system->postUpdate( delta );
+        system->PostUpdate( delta );
     }
 }
 
-void secs::SystemManager::render()
+void secs::SystemManager::Render()
 {
     for( System::Ptr system : m_renderingSystems )
     {
-        if( system->isEnabled() )
+        if( system->IsEnabled() )
         {
-            system->renderStep( );
+            system->RenderStep( );
         }
     }
 }
@@ -123,7 +123,7 @@ void secs::SystemManager::insertSorted(secs::System::Ptr system, std::vector<sec
 {
     auto comparator = []( System::Ptr s1, System::Ptr s2 )
     {
-        return s1->executionPriority() < s2->executionPriority();
+        return s1->GetExecutionPriority() < s2->GetExecutionPriority();
     };
     auto it = std::upper_bound( vec.begin(), vec.end(), system, comparator);
     vec.insert(it, system);

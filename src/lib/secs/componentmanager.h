@@ -20,10 +20,10 @@ public:
 	typedef ComponentManager* Ptr;
 
 	template <typename ComponentType>
-	typename ComponentStorage<ComponentType>::SharedPtr componentStorage()
+	typename ComponentStorage<ComponentType>::SharedPtr GetComponentStorageForComponentType()
 	{
 		typename ComponentStorage<ComponentType>::SharedPtr component_storage;
-		auto component_index = ComponentTraits::getIndex<ComponentType>();
+		auto component_index = ComponentTraits::GetIndexForComponentType<ComponentType>();
 
 		if( ( component_index + 1 ) > m_componentStorageVector.size() )
 		{
@@ -45,9 +45,9 @@ public:
 	}
 
 	template <typename ComponentType>
-	ComponentType& component( Entity e )
+	ComponentType& GetComponentForEntity( Entity e )
 	{
-		return componentStorage<ComponentType>()->component(e);
+		return GetComponentStorageForComponentType<ComponentType>()->GetComponent(e);
 	}
 
 private:

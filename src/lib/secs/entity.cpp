@@ -16,25 +16,25 @@ Entity::Entity()
 
 }
 
-Entity::eid_t Entity::eid() const
+Entity::eid_t Entity::GetEID() const
 {
     assert(m_eid != InvalidEntity);
 	return m_eid;
 }
 
-bool Entity::isValid() const
+bool Entity::IsValid() const
 {
     return m_eid != InvalidEntity;
 }
 
-void Entity::invalidate()
+void Entity::Invalidate()
 {
     m_eid = InvalidEntity;
 }
 
 bool Entity::operator==(const Entity &other)
 {
-    return m_eid == other.eid();
+    return m_eid == other.GetEID();
 }
 
 bool Entity::operator<(const Entity &other) const

@@ -13,31 +13,31 @@ public:
 
 	virtual ~System();
 
-    virtual void step( double delta );
+    virtual void Step( double delta );
 
-    virtual void renderStep();
+    virtual void RenderStep();
 
-    virtual void preUpdate( double delta );
+    virtual void PreUpdate( double delta );
 
-    virtual void postUpdate( double delta );
+    virtual void PostUpdate( double delta );
 
-    void setStepConfiguration( bool process_step, bool render_step );
+    void SetStepConfiguration( bool process_step, bool render_step );
 
-    void enable();
+    void Enable();
 
-    void disable();
+    void Disable();
 
-    bool isEnabled();
+    bool IsEnabled();
 
-    bool hasProcessingStep();
+    bool HasProcessingStep();
 
-    bool hasRenderingStep();
+    bool HasRenderingStep();
 
-    int executionPriority();
+    int GetExecutionPriority();
 
 protected:
 
-    void setExecutionPriority(int priority);
+    void SetExecutionPriority(int priority);
 
 private:
     bool m_hasProcessingStep = true;

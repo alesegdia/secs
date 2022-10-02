@@ -24,12 +24,12 @@ public:
 
     void onEnter(const secs::Entity& e, secs::EntityProcessor& processor) override
     {
-        load(e, processor, processor.addOrRetrieveComponent<ComponentTypes...>(e));
+        load(e, processor, processor.AddOrRetrieveComponent<ComponentTypes...>(e));
     }
 
     void onExit(const secs::Entity& e, secs::EntityProcessor& processor) override
     {
-        save(processor.removeComponent<ComponentTypes...>(e));
+        save(processor.RemoveComponent<ComponentTypes...>(e));
     }
 };
 
