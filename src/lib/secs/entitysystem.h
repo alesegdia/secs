@@ -83,8 +83,13 @@ protected:
         return m_componentFlagsManager->HasComponent<ComponentType>(e);
     }
 
+    void DestroyEntity(const Entity& entity)
+	{
+		GetEntityProcessor()->RemoveEntity(entity);
+	}
+
 private:
-	void RemoveEntity( const Entity& entity );
+	void RemoveEntity(const Entity& entity);
 	void AddEntity( const Entity& entity );
 
 	ComponentBits m_neededComponents;

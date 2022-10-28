@@ -3,6 +3,7 @@
 #include <unordered_set>
 #include <algorithm>
 #include <list>
+#include <unordered_map>
 #include <vector>
 
 #include "entity.h"
@@ -114,6 +115,24 @@ public:
 
 	void ForceApplyChanges();
 
+	void TagEntity(secs::Entity e, std::string tag)
+	{
+		if(m_taggedEntities.count(tag) == 0)
+		{
+			m_taggedEntities = {};
+		}
+		m_taggedEntities[tag].push_back(e);
+	}
+
+	std::vector<secs::Entity> GetAllEntitiesWithTag(const std::string& tag)
+	{
+		if(m_taggedEntities.count(tag) == 0)
+		{
+			return {};
+		}
+		return m_taggedEntities[tag];
+	}
+
 private:
 
 	void ApplyChanges();
@@ -127,6 +146,8 @@ private:
 	std::vector<Entity> m_removedEntities;
 	std::vector<Entity> m_deactivatedEntities;
 	std::vector<ComponentEdit> m_componentEdits;
+
+	std::unordered_map<std::string, std::vector<Entity>> m_taggedEntities;
 
     int m_numEntities;
 
