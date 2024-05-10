@@ -97,6 +97,7 @@ void secs::SystemManager::EnableSystemGroup(secs::SystemGroupIndex sgi)
 
 void secs::SystemManager::Step( double delta )
 {
+    // std::cout << "start update systems" << std::endl;
     for( System::Ptr system : m_processingSystems )
     {
         system->PreUpdate( delta );
@@ -106,6 +107,7 @@ void secs::SystemManager::Step( double delta )
         }
         system->PostUpdate( delta );
     }
+    // std::cout << "end update systems" << std::endl;
 }
 
 void secs::SystemManager::Render()

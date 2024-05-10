@@ -60,6 +60,7 @@ namespace secs
 
 	void EntityProcessor::ApplyChanges()
 	{
+		// std::cout << "Applying changes" << std::endl;
 		std::list<Entity> change_list;
 		for (ComponentEdit& edit : m_componentEdits)
 		{

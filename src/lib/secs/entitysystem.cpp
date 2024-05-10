@@ -77,10 +77,12 @@ void secs::EntitySystem::SetComponentFlagsManager(secs::ComponentFlagsManager::P
 
 void secs::EntitySystem::Step(double delta)
 {
+	// std::cout << "step sys" << std::endl;
     for( const Entity& e : m_activeEntities )
     {
         Process( delta, e );
     }
+	// std::cout << "step sys end" << std::endl;
 }
 
 void secs::EntitySystem::RenderStep()

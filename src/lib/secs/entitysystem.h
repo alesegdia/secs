@@ -77,13 +77,13 @@ protected:
 		return m_componentManager->GetComponentForEntity<ComponentType>(e);
 	}
 
-    template <typename ComponentType>
-    bool HasComponent( const Entity& e )
-    {
-        return m_componentFlagsManager->HasComponent<ComponentType>(e);
-    }
+	template <typename ComponentType>
+	bool HasComponent(const Entity& e)
+	{
+		return m_componentFlagsManager->HasComponent<ComponentType>(e);
+	}
 
-    void DestroyEntity(const Entity& entity)
+	void DestroyEntity(const Entity& entity)
 	{
 		GetEntityProcessor()->RemoveEntity(entity);
 	}

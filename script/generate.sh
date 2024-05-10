@@ -107,7 +107,8 @@ if [ "$CMD" == "newsystem" ]; then
 	
 	echo "Generating system at $SYSTEM_FILE..."
 	
-	SYSTEM_SOURCE="#pragma once
+	SYSTEM_SOURCE="
+#pragma once
 
 #include <secs/secs.h>
 #include \"../components.h\"
@@ -126,4 +127,4 @@ public:
 fi
 
 regenerate_headers
-build_prefab
+# build_prefab

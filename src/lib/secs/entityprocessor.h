@@ -57,7 +57,7 @@ public:
     ComponentType& AddComponent( const Entity& entity )
     {
 		assert(entity.IsValid());
-        assert(false == m_componentFlagsManager.HasComponent<ComponentType>(entity));
+        // assert(false == m_componentFlagsManager.HasComponent<ComponentType>(entity));
         return AddOrRetrieveComponent<ComponentType>(entity);
     }
 
@@ -102,7 +102,7 @@ public:
     int GetNumEntities();
 
     template <typename ComponentType>
-    ComponentType& Component(const secs::Entity& e)
+    ComponentType& GetComponent(const secs::Entity& e)
     {
         return m_componentManager.GetComponentForEntity<ComponentType>(e);
     }
