@@ -62,11 +62,17 @@ public:
         m_componentManager = component_manager;
     }
 
-    template <typename ComponentType>
-    ComponentType& AddComponent(const secs::Entity& e)
-    {
-        return m_entityProcessor->AddComponent<ComponentType>(e);
-    }
+	template <typename ComponentType>
+	ComponentType& AddComponent(const secs::Entity& e)
+	{
+		return m_entityProcessor->AddComponent<ComponentType>(e);
+	}
+
+	template <typename ComponentType>
+	ComponentType& RemoveComponent(const secs::Entity& e)
+	{
+		return m_entityProcessor->RemoveComponent<ComponentType>(e);
+	}
 
 protected:
     EntityProcessor::Ptr GetEntityProcessor();
