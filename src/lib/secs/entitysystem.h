@@ -216,9 +216,9 @@ namespace secs
         ComponentBits m_neededComponents; ///< The needed components for the system.
         EntityBits m_entityBits; ///< The entity bits.
         std::list<Entity> m_activeEntities; ///< The list of active entities.
-        ComponentFlagsManager::Ptr m_componentFlagsManager; ///< The component flags manager.
-        EntityProcessor::Ptr m_entityProcessor; ///< The entity processor.
-        ComponentManager::Ptr m_componentManager; ///< The component manager.
+        ComponentFlagsManager::Ptr m_componentFlagsManager = nullptr; ///< The component flags manager.
+        EntityProcessor::Ptr m_entityProcessor = nullptr; ///< The entity processor.
+        ComponentManager::Ptr m_componentManager = nullptr; ///< The component manager.
 
     };
 
