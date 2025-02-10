@@ -184,6 +184,15 @@ namespace secs
             return m_componentFlagsManager.HasComponent<T>(e);
         }
 
+		/**
+		 * @brief Gets all systems in the engine.
+		 * @return A vector of all systems in the engine.
+		 */
+		const std::vector<EntitySystem::Ptr>& GetAllSystems()
+        {
+            return m_systemManager.GetAllEntitySystems();
+        }
+
     private:
 
         ComponentFlagsManager m_componentFlagsManager;

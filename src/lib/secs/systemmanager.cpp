@@ -61,6 +61,7 @@ void secs::SystemManager::PushSystem( secs::System::Ptr system, EntitySystem::Pt
         insertSorted( system, m_processingSystems );
     }
 
+
 }
 
 void secs::SystemManager::ActivateSystemGroup(secs::SystemGroupIndex sgi)

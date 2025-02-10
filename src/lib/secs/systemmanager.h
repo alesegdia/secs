@@ -94,6 +94,11 @@ namespace secs
          */
         void Render();
 
+        const std::vector<EntitySystem::Ptr>& GetAllEntitySystems() const
+        {
+            return m_entitySystems;
+        }
+
     private:
 
         /**
