@@ -188,7 +188,7 @@ namespace secs
 		 * @brief Gets all systems in the engine.
 		 * @return A vector of all systems in the engine.
 		 */
-		const std::vector<EntitySystem::Ptr>& GetAllSystems()
+		const std::vector<EntitySystem::Ptr>& GetAllSystems() const
         {
             return m_systemManager.GetAllEntitySystems();
         }

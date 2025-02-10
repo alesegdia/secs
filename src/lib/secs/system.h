@@ -4,6 +4,7 @@
 #include <string>
 
 #define SECS_SYSTEM(name) const char* GetName() const override { return #name; }
+#define SECS_COMPONENT(name) const char* GetName() const { return #name; }
 
 namespace secs
 {
