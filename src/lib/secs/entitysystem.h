@@ -256,7 +256,7 @@ namespace secs
          */
         void Process(double delta, const secs::Entity& e) final
         {
-            process(delta, e, GetComponent<Args>(e)...);
+            Process(delta, e, GetComponent<Args>(e)...);
         }
 
         /**
@@ -265,7 +265,7 @@ namespace secs
          * @param e The entity to process.
          * @param args The components of the entity.
          */
-        virtual void process(double delta, const secs::Entity& e, Args&... args) = 0;
+        virtual void Process(double delta, const secs::Entity& e, Args&... args) = 0;
 
     private:
         ComponentManager::Ptr m_componentManager; ///< The component manager.
