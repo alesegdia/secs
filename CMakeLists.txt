@@ -14,9 +14,17 @@ list( APPEND CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS} -g -ftest-coverage -
 
 
 # SET SOURCES AND STUFF
-file(GLOB_RECURSE LIB_SRC src/lib/*)
+file(GLOB_RECURSE SECS_SOURCES src/lib/*)
 
-add_library(secs ${LIB_SRC})
+#set include dirs
+set(SECS_INCLUDE_DIRS
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/
+)
+
+add_library(secs ${SECS_SOURCES})
+target_include_directories(secs PUBLIC ${SECS_INCLUDE_DIRS})
+
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src/lib FILES ${SECS_SOURCES})
 
 #file(GLOB tests RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/test/*.cpp)
 
