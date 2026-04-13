@@ -49,7 +49,7 @@ namespace secs
          * @param other The other entity to compare with.
          * @return True if the entities are equal, false otherwise.
          */
-        bool operator==(const Entity& other);
+        bool operator==(const Entity& other) const;
 
         /**
          * @brief Less-than operator for comparing two entities.

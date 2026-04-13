@@ -32,9 +32,9 @@ void Entity::Invalidate()
     m_eid = InvalidEntity;
 }
 
-bool Entity::operator==(const Entity &other)
+bool Entity::operator==(const Entity &other) const
 {
-    return m_eid == other.GetEID();
+    return m_eid == other.m_eid;
 }
 
 bool Entity::operator<(const Entity &other) const

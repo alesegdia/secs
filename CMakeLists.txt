@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.15)
 
 project(secs)
 
@@ -6,10 +6,12 @@ project(secs)
 #set(EXECUTABLE_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/bin)
 #set(LIBRARY_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/lib)
 
-#enable_testing()
-#include(CTest)
+enable_testing()
+include(CTest)
 #include(TestHelpers)
 #add_subdirectory(module/xstf)
+
+find_package(GTest REQUIRED)
 
 # SET SOURCES AND STUFF
 file(GLOB_RECURSE SECS_SOURCES src/lib/*)
@@ -29,6 +31,18 @@ set_target_properties(secs PROPERTIES
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
 )
+
+# Tests
+file(GLOB_RECURSE SECS_TEST_SOURCES src/gtests/*.cpp)
+
+add_executable(secs-tests ${SECS_TEST_SOURCES})
+target_link_libraries(secs-tests PRIVATE secs GTest::gtest GTest::gtest_main GTest::gmock)
+set_target_properties(secs-tests PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED YES
+    CXX_EXTENSIONS NO
+)
+add_test(NAME secs-tests COMMAND secs-tests)
 
 #file(GLOB tests RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/test/*.cpp)
 
