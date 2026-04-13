@@ -23,9 +23,11 @@ namespace secs
 
         /**
          * @brief Constructs an Engine object.
+         * @param mode Selects the component storage backend (default: SparseSet).
          */
-        Engine()
-            : m_systemManager(m_componentFlagsManager),
+        explicit Engine(StorageMode mode = StorageMode::SparseSet)
+            : m_componentManager(mode),
+            m_systemManager(m_componentFlagsManager),
             m_entityProcessor(m_systemManager, m_componentManager, m_componentFlagsManager)
         {
 
@@ -196,8 +198,8 @@ namespace secs
     private:
 
         ComponentFlagsManager m_componentFlagsManager;
-        SystemManager m_systemManager;
         ComponentManager m_componentManager;
+        SystemManager m_systemManager;
         EntityProcessor m_entityProcessor;
 
     };

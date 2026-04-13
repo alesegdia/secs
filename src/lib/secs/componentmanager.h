@@ -20,9 +20,18 @@ namespace secs {
         typedef ComponentManager* Ptr;
 
         /**
-         * @brief Retrieves the component storage for a specific component type.
+         * @brief Constructs a ComponentManager with the specified storage backend.
+         * @param mode Selects VectorComponentStorage or SparseSetComponentStorage.
+         *             Defaults to SparseSet (packed, cache-friendly).
+         */
+        explicit ComponentManager(StorageMode mode = StorageMode::SparseSet)
+            : m_storageMode(mode)
+        {}
+
+        /**
+         * @brief Retrieves (or lazily creates) the component storage for a specific component type.
          * @tparam ComponentType The type of the component.
-         * @return A shared pointer to the component storage for the specified component type.
+         * @return A shared pointer to the typed storage for the specified component type.
          */
         template <typename ComponentType>
         typename ComponentStorage<ComponentType>::SharedPtr GetComponentStorageForComponentType()
@@ -37,14 +46,19 @@ namespace secs {
 
             if (m_componentStorageVector[component_index] == nullptr)
             {
-                auto base_storage = std::shared_ptr<BaseComponentStorage>(new ComponentStorage<ComponentType>());
-                component_storage = std::static_pointer_cast<ComponentStorage<ComponentType>>(base_storage);
-                m_componentStorageVector[component_index] = base_storage;
+                std::shared_ptr<TypedComponentStorage<ComponentType>> typed_storage;
+                if (m_storageMode == StorageMode::SparseSet)
+                    typed_storage = std::make_shared<SparseSetComponentStorage<ComponentType>>();
+                else
+                    typed_storage = std::make_shared<VectorComponentStorage<ComponentType>>();
+
+                m_componentStorageVector[component_index] = typed_storage;
+                component_storage = typed_storage;
             }
             else
             {
-                auto base_storage = m_componentStorageVector[component_index];
-                component_storage = std::static_pointer_cast<ComponentStorage<ComponentType>>(base_storage);
+                component_storage = std::static_pointer_cast<TypedComponentStorage<ComponentType>>(
+                    m_componentStorageVector[component_index]);
             }
             return component_storage;
         }
@@ -62,6 +76,8 @@ namespace secs {
         }
 
     private:
+        StorageMode m_storageMode; ///< Backend selected at construction time.
+
         /**
          * @brief A vector that stores shared pointers to the base component storage.
          */

@@ -395,6 +395,76 @@ TEST_F(VisitTests, VisitDoesNotVisitRemovedEntities)
     EXPECT_EQ(count, 1);
 }
 
+// ===========================================================================
+// Storage mode tests
+// ===========================================================================
+
+// Parameterised fixture so we run the same assertions against both backends.
+class StorageModeTests : public testing::TestWithParam<secs::StorageMode>
+{
+protected:
+    secs::Engine engine{ GetParam() };
+    secs::EntityProcessor& proc{ engine.GetEntityProcessor() };
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    BothBackends,
+    StorageModeTests,
+    testing::Values(secs::StorageMode::Vector, secs::StorageMode::SparseSet),
+    [](const testing::TestParamInfo<secs::StorageMode>& info) {
+        return info.param == secs::StorageMode::Vector ? "Vector" : "SparseSet";
+    }
+);
+
+TEST_P(StorageModeTests, AllocAndGetComponent_RoundTrip)
+{
+    secs::Entity e = proc.AddEntity();
+    Position& p = proc.AddComponent<Position>(e);
+    p.x = 1.f; p.y = 2.f;
+    proc.ForceApplyChanges();
+
+    EXPECT_FLOAT_EQ(proc.GetComponent<Position>(e).x, 1.f);
+    EXPECT_FLOAT_EQ(proc.GetComponent<Position>(e).y, 2.f);
+}
+
+TEST_P(StorageModeTests, HasComponent_TrueAfterAdd_FalseAfterRemove)
+{
+    secs::Entity e = proc.AddEntity();
+    proc.AddComponent<Health>(e);
+    proc.ForceApplyChanges();
+    EXPECT_TRUE(proc.HasComponent<Health>(e));
+
+    proc.RemoveComponent<Health>(e);
+    proc.ForceApplyChanges();
+    EXPECT_FALSE(proc.HasComponent<Health>(e));
+}
+
+TEST_P(StorageModeTests, MultipleEntities_ComponentsAreIndependent)
+{
+    secs::Entity a = proc.AddEntity();
+    secs::Entity b = proc.AddEntity();
+    proc.AddComponent<Position>(a).x = 10.f;
+    proc.AddComponent<Position>(b).x = 20.f;
+    proc.ForceApplyChanges();
+
+    EXPECT_FLOAT_EQ(proc.GetComponent<Position>(a).x, 10.f);
+    EXPECT_FLOAT_EQ(proc.GetComponent<Position>(b).x, 20.f);
+}
+
+TEST_P(StorageModeTests, SystemProcessesEntityInBothModes)
+{
+    auto sys = engine.CreateSystem<MoveSystem>();
+
+    secs::Entity e = proc.AddEntity();
+    proc.AddComponent<Position>(e);
+    proc.AddComponent<Velocity>(e).vx = 3.f;
+
+    engine.Step(0.0);
+
+    EXPECT_EQ(sys->processCount, 1);
+    EXPECT_FLOAT_EQ(proc.GetComponent<Position>(e).x, 3.f);
+}
+
 } // namespace secs::tests
 
 

@@ -12,6 +12,7 @@ include(CTest)
 #add_subdirectory(module/xstf)
 
 find_package(GTest REQUIRED)
+find_package(benchmark REQUIRED)
 
 # SET SOURCES AND STUFF
 file(GLOB_RECURSE SECS_SOURCES src/lib/*)
@@ -43,6 +44,17 @@ set_target_properties(secs-tests PROPERTIES
     CXX_EXTENSIONS NO
 )
 add_test(NAME secs-tests COMMAND secs-tests)
+
+# Benchmarks
+file(GLOB_RECURSE SECS_BENCH_SOURCES src/benchmarks/*.cpp)
+
+add_executable(secs-benchmarks ${SECS_BENCH_SOURCES})
+target_link_libraries(secs-benchmarks PRIVATE secs benchmark::benchmark)
+set_target_properties(secs-benchmarks PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED YES
+    CXX_EXTENSIONS NO
+)
 
 #file(GLOB tests RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/test/*.cpp)
 

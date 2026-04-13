@@ -194,6 +194,16 @@ namespace secs
         }
 
         /**
+         * @brief Returns the typed component storage for a given component type.
+         *        Useful for inspecting storage properties such as AllocatedBytes().
+         */
+        template <typename ComponentType>
+        typename ComponentStorage<ComponentType>::SharedPtr GetComponentStorageForComponentType()
+        {
+            return m_componentManager.GetComponentStorageForComponentType<ComponentType>();
+        }
+
+        /**
          * @brief Forces the application of changes to entities and components.
          */
         void ForceApplyChanges();
