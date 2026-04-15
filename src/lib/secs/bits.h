@@ -1,13 +1,12 @@
 #pragma once
 
-#include <bitset>
-
 #include "config.h"
+#include "dynamicbitset.h"
 
 namespace secs
 {
 
-typedef std::bitset<Config::MaxNumEntities> EntityBits;
-typedef std::bitset<Config::MaxNumComponents> ComponentBits;
+typedef DynamicBitset EntityBits;
+typedef DynamicBitset ComponentBits;
 
 }

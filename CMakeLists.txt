@@ -6,13 +6,20 @@ project(secs)
 #set(EXECUTABLE_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/bin)
 #set(LIBRARY_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/lib)
 
+option(BUILD_GTESTS "Build GTest unit tests" OFF)
+option(BUILD_BENCHMARKS "Build Google Benchmark targets" OFF)
+
 enable_testing()
 include(CTest)
 #include(TestHelpers)
 #add_subdirectory(module/xstf)
 
-find_package(GTest REQUIRED)
-find_package(benchmark REQUIRED)
+if(BUILD_GTESTS)
+    find_package(GTest REQUIRED)
+endif()
+if(BUILD_BENCHMARKS)
+    find_package(benchmark REQUIRED)
+endif()
 
 # SET SOURCES AND STUFF
 file(GLOB_RECURSE SECS_SOURCES src/lib/*)
@@ -34,27 +41,31 @@ set_target_properties(secs PROPERTIES
 )
 
 # Tests
-file(GLOB_RECURSE SECS_TEST_SOURCES src/gtests/*.cpp)
+if(BUILD_GTESTS)
+    file(GLOB_RECURSE SECS_TEST_SOURCES src/gtests/*.cpp)
 
-add_executable(secs-tests ${SECS_TEST_SOURCES})
-target_link_libraries(secs-tests PRIVATE secs GTest::gtest GTest::gtest_main GTest::gmock)
-set_target_properties(secs-tests PROPERTIES
-    CXX_STANDARD 17
-    CXX_STANDARD_REQUIRED YES
-    CXX_EXTENSIONS NO
-)
-add_test(NAME secs-tests COMMAND secs-tests)
+    add_executable(secs-tests ${SECS_TEST_SOURCES})
+    target_link_libraries(secs-tests PRIVATE secs GTest::gtest GTest::gtest_main GTest::gmock)
+    set_target_properties(secs-tests PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED YES
+        CXX_EXTENSIONS NO
+    )
+    add_test(NAME secs-tests COMMAND secs-tests)
+endif()
 
 # Benchmarks
-file(GLOB_RECURSE SECS_BENCH_SOURCES src/benchmarks/*.cpp)
+if(BUILD_BENCHMARKS)
+    file(GLOB_RECURSE SECS_BENCH_SOURCES src/benchmarks/*.cpp)
 
-add_executable(secs-benchmarks ${SECS_BENCH_SOURCES})
-target_link_libraries(secs-benchmarks PRIVATE secs benchmark::benchmark)
-set_target_properties(secs-benchmarks PROPERTIES
-    CXX_STANDARD 17
-    CXX_STANDARD_REQUIRED YES
-    CXX_EXTENSIONS NO
-)
+    add_executable(secs-benchmarks ${SECS_BENCH_SOURCES})
+    target_link_libraries(secs-benchmarks PRIVATE secs benchmark::benchmark)
+    set_target_properties(secs-benchmarks PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED YES
+        CXX_EXTENSIONS NO
+    )
+endif()
 
 #file(GLOB tests RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/test/*.cpp)
 

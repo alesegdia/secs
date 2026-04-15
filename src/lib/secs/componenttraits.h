@@ -71,7 +71,7 @@ namespace secs {
         static ComponentBits BuildBits()
         {
             ComponentBits b;
-            b.set(ComponentTraits::GetIndexForComponentType<First>());
+            b.Set(ComponentTraits::GetIndexForComponentType<First>());
             return b | ComponentBitsBuilder<Rest...>::BuildBits();
         }
     };

@@ -5,9 +5,9 @@
 secs::System::~System()
 = default;
 
-void secs::System::Step(double delta)
+void secs::System::Step(double)
 {
-    SECS_UNUSED(delta);
+
 }
 
 void secs::System::RenderStep()
@@ -15,14 +15,14 @@ void secs::System::RenderStep()
 
 }
 
-void secs::System::PreUpdate(double delta)
+void secs::System::PreUpdate(double)
 {
-    SECS_UNUSED(delta);
+
 }
 
-void secs::System::PostUpdate(double delta)
+void secs::System::PostUpdate(double)
 {
-    SECS_UNUSED(delta);
+
 }
 
 void secs::System::SetStepConfiguration(bool process_step, bool render_step)

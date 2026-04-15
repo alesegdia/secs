@@ -65,7 +65,7 @@ namespace secs
          */
         void ClearAllFlagsForEntity(const Entity& entity)
         {
-            m_entityBits[secs::eid_t(entity.GetEID())].reset();
+            m_entityBits[secs::eid_t(entity.GetEID())].Reset();
         }
 
     private:

@@ -25,7 +25,7 @@ namespace secs
         typedef std::shared_ptr<EntitySystem> Ptr;
 
         /**
-         * @brief Sets the needed components for the system.
+         * @brief Sets the needed components for an entity match the system.
          * @tparam Args The types of the needed components.
          */
         template <typename... Args>
@@ -35,7 +35,7 @@ namespace secs
         }
 
         /**
-         * @brief Adds needed components to the system.
+         * @brief Adds needed components for an entity match the system.
          * @tparam Args The types of the needed components.
          */
         template <typename... Args>
@@ -44,9 +44,6 @@ namespace secs
             m_neededComponents |= ComponentBitsBuilder<Args...>::BuildBits();
         }
 
-        /**
-         * @brief Virtual destructor for EntitySystem.
-         */
         ~EntitySystem() = 0;
 
         // System interface
@@ -62,98 +59,33 @@ namespace secs
         void RenderStep() override;
 
         // EntityObserver interface
-        /**
-         * @brief Called when entities have been added.
-         * @param entities The list of entities that have been added.
-         */
         void OnEntitiesAdded(const std::vector<Entity>& entities) final;
-
-        /**
-         * @brief Called when entities have been removed.
-         * @param entities The list of entities that have been removed.
-         */
         void OnEntitiesRemoved(const std::vector<Entity>& entities) final;
-
-        /**
-         * @brief Called when entities have changed.
-         * @param entities The list of entities that have changed.
-         */
         void OnEntitiesChanged(const std::vector<Entity>& entities) final;
 
-        /**
-         * @brief Checks if the system accepts the given entity.
-         * @param entity The entity to check.
-         * @return True if the system accepts the entity, false otherwise.
-         */
+        // Public interface of EntitySystem
         virtual bool AcceptsEntity(const Entity& entity);
-
-        /**
-         * @brief Called when an entity is added to the system.
-         * @param e The entity that was added.
-         */
         virtual void OnEntityAdded(const Entity& e);
-
-        /**
-         * @brief Called when an entity is removed from the system.
-         * @param e The entity that was removed.
-         */
         virtual void OnEntityRemoved(const Entity& e);
-
-        /**
-         * @brief Processes the given entity.
-         * @param delta The delta time.
-         * @param e The entity to process.
-         */
         virtual void Process(double delta, const Entity& e);
-
-        /**
-         * @brief Renders the given entity.
-         * @param e The entity to render.
-         */
         virtual void Render(const Entity& e);
 
-        /**
-         * @brief Sets the component flags manager.
-         * @param cfm The component flags manager.
-         */
         void SetComponentFlagsManager(ComponentFlagsManager::Ptr cfm);
-
-        /**
-         * @brief Sets the entity processor.
-         * @param processor The entity processor.
-         */
         void SetEntityProcessor(EntityProcessor::Ptr processor)
         {
             m_entityProcessor = processor;
         }
-
-        /**
-         * @brief Sets the component manager.
-         * @param component_manager The component manager.
-         */
         void SetComponentManager(ComponentManager::Ptr component_manager)
         {
             m_componentManager = component_manager;
         }
 
-        /**
-         * @brief Adds a component of the specified type to the given entity.
-         * @tparam ComponentType The type of the component to add.
-         * @param e The entity to add the component to.
-         * @return A reference to the added component.
-         */
         template <typename ComponentType>
         ComponentType& AddComponent(const secs::Entity& e)
         {
             return m_entityProcessor->AddComponent<ComponentType>(e);
         }
 
-        /**
-         * @brief Removes a component of the specified type from the given entity.
-         * @tparam ComponentType The type of the component to remove.
-         * @param e The entity to remove the component from.
-         * @return A reference to the removed component.
-         */
         template <typename ComponentType>
         ComponentType& RemoveComponent(const secs::Entity& e)
         {
@@ -161,40 +93,20 @@ namespace secs
         }
 
     protected:
-        /**
-         * @brief Gets the entity processor.
-         * @return The entity processor.
-         */
         EntityProcessor::Ptr GetEntityProcessor();
 
-        /**
-         * @brief Gets a component of the specified type for the given entity.
-         * @tparam ComponentType The type of the component to get.
-         * @param e The entity to get the component for.
-         * @return A reference to the component.
-         */
         template <typename ComponentType>
         ComponentType& GetComponent(const Entity& e)
         {
             return m_componentManager->GetComponentForEntity<ComponentType>(e);
         }
 
-        /**
-         * @brief Checks if the given entity has a component of the specified type.
-         * @tparam ComponentType The type of the component to check for.
-         * @param e The entity to check.
-         * @return True if the entity has the component, false otherwise.
-         */
         template <typename ComponentType>
-        bool HasComponent(const Entity& e)
+        bool HasComponent(const Entity& e) const
         {
             return m_componentFlagsManager->HasComponent<ComponentType>(e);
         }
 
-        /**
-         * @brief Destroys the given entity.
-         * @param entity The entity to destroy.
-         */
         void DestroyEntity(const Entity& entity)
         {
             GetEntityProcessor()->RemoveEntity(entity);

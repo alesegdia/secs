@@ -169,9 +169,9 @@ namespace secs
          * @brief Deactivates a given entity.
          * @param e The entity to deactivate.
          */
-        void Deactivate(const Entity e)
+        void Deactivate(const Entity )
         {
-            SECS_UNUSED(e);
+            
         }
 
         /**

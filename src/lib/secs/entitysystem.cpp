@@ -30,7 +30,7 @@ void secs::EntitySystem::OnEntitiesChanged(const std::vector<secs::Entity> &enti
 {
 	for( const Entity& entity : entities )
 	{
-		bool already_present = m_entityBits.test(secs::eid_t(entity.GetEID()) );
+		bool already_present = m_entityBits.Test(secs::eid_t(entity.GetEID()) );
 		bool system_accept = AcceptsEntity( entity );
 		if( already_present && !system_accept )
 		{
@@ -49,25 +49,23 @@ bool secs::EntitySystem::AcceptsEntity(const secs::Entity& entity)
 	return ( m_neededComponents & entity_component_bits ) == m_neededComponents;
 }
 
-void secs::EntitySystem::OnEntityAdded(const secs::Entity &e)
+void secs::EntitySystem::OnEntityAdded(const secs::Entity &)
 {
-    SECS_UNUSED(e);
+
 }
 
-void secs::EntitySystem::OnEntityRemoved(const secs::Entity &e)
+void secs::EntitySystem::OnEntityRemoved(const secs::Entity &)
 {
-    SECS_UNUSED(e);
+
 }
 
-void secs::EntitySystem::Process(double delta, const Entity& e)
+void secs::EntitySystem::Process(double, const Entity&)
 {
-	SECS_UNUSED(delta);
-	SECS_UNUSED(e);
+
 }
 
-void secs::EntitySystem::Render(const Entity& e)
+void secs::EntitySystem::Render(const Entity&)
 {
-	SECS_UNUSED(e);
 }
 
 void secs::EntitySystem::SetComponentFlagsManager(secs::ComponentFlagsManager::Ptr cfm)
@@ -101,7 +99,7 @@ secs::EntityProcessor::Ptr secs::EntitySystem::GetEntityProcessor()
 void secs::EntitySystem::RemoveEntity(const secs::Entity &entity)
 {
 	size_t pos = size_t(entity.GetEID());
-	m_entityBits.set( pos, false );
+	m_entityBits.Set( pos, false );
 	m_activeEntities.erase( std::remove( m_activeEntities.begin(), m_activeEntities.end(), entity ), m_activeEntities.end() );
     OnEntityRemoved( entity );fflush(0);
 }
@@ -109,7 +107,7 @@ void secs::EntitySystem::RemoveEntity(const secs::Entity &entity)
 void secs::EntitySystem::AddEntity(const secs::Entity &entity)
 {
 	size_t pos = size_t(entity.GetEID());
-    m_entityBits.set( pos, true );
+    m_entityBits.Set( pos, true );
     m_activeEntities.push_back( entity );
 	OnEntityAdded( entity );
 }
