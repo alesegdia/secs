@@ -10,10 +10,15 @@
 #		+ [requirements]: a list of components needed by the system (not used when creating new components)
 #
 # EXAMPLES
-#	./generate.sh src/ecs newsystem Damage HealthComponent DamageComponent
-# 		Generates a new DamageSystem with HealthComponent and DamageComponent as requirements
-#   ./generate.sh src/ecs newcomponent Damage
-# 		Generate a new DamageComponent
+#   ./generate.sh src/ecs newcomponent HealthComponent
+# 		Generates struct HealthComponent in src/ecs/component/healthcomponent.h
+#	./generate.sh src/ecs newsystem DamageSystem HealthComponent DamageComponent
+# 		Generates class DamageSystem in src/ecs/system/damagesystem.h, processing every entity
+# 		that has both a HealthComponent and a DamageComponent
+#
+# The name is used verbatim (no suffix is added). The component and system folders must
+# already exist. Requirements must name existing components; the generated Process()
+# gets one reference parameter per requirement, named after it in lowercase.
 
 FOLDER=$1
 shift
@@ -59,6 +64,7 @@ if [ "$CMD" == "newcomponent" ]; then
 	COMPONENT_FILE="${FOLDER}/component/${ARG,,}.h"
 	if [ -f $COMPONENT_FILE ]; then
 		echo "Error trying to create component! File $COMPONENT_FILE already exists!"
+		exit 1
 	fi
 	
 	if [ "$ARG" == "" ]; then
@@ -116,9 +122,12 @@ if [ "$CMD" == "newsystem" ]; then
 class ${ARG} : public secs::TypedEntitySystem<${REQUIREMENTS_LINE}>
 {
 public:
-	void process( double delta, const secs::Entity& e, ${REQUIREMENTS_PROCESS} )
+	SECS_SYSTEM(${ARG})
+
+	// Called every Engine::Step for each entity that has all the required components.
+	void Process(double delta, const secs::Entity& e, ${REQUIREMENTS_PROCESS}) override
 	{
-	
+
 	}
 };	
 "

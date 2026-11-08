@@ -39,7 +39,7 @@ Findings are grouped into four tiers and sorted by priority within each tier.
 | 8 | P0 | `SetSystemGroup` asserts on the wrong thing and dereferences null | Medium | S | ✅ Fixed |
 | 9 | P0 | `GetComponent`/`RemoveComponent` on a missing component reads out of bounds; entity count drifts | Medium | S | ✅ Fixed |
 | 10 | P1 | Every `GetComponent` copies a `shared_ptr` (two atomic ops) and runs a resize check | High | S | ✅ Fixed |
-| 11 | P1 | `AcceptsEntity` heap-allocates (`vector<bool>`) per entity, per system, per change | Medium | M | Open |
+| 11 | P1 | `AcceptsEntity` heap-allocates (`vector<bool>`) per entity, per system, per change | Medium | M | ✅ Fixed |
 | 12 | P1 | System entity lists are `std::list` with O(n) removal | Medium | S | Open |
 | 13 | P1 | Iteration doesn't use the packed sparse-set arrays | Medium | L | Open |
 | 14 | P1 | Avoidable copies and O(n) operations in `EIDStorage`, `Visit`, `ApplyChanges` | Low–Med | S | 🟡 Partial |
@@ -51,11 +51,11 @@ Findings are grouped into four tiers and sorted by priority within each tier.
 | 20 | P2 | Smaller API issues: no perfect forwarding, no emplace, `Pre/PostUpdate` on disabled systems, const-correctness | Low | S | Open |
 | 21 | P3 | Missing or unused includes, leftover debug code (`fflush(0)`), inconsistent include style | Low | S | 🟡 Partial |
 | 22 | P3 | Tests don't cover any of the bugs above; no CI, warnings or sanitizers | Medium | M | 🟡 Partial |
-| 23 | P3 | Docs are out of date (SPECS non-goals, freeing step, unused submodule) | Low | S | Open |
+| 23 | P3 | Docs are out of date (SPECS non-goals, freeing step, unused submodule) | Low | S | ✅ Fixed |
 
 **Suggested order:** 1 → 4 → 8 → 9 → 7 → 10 → 2 → 5 → 3 → 6, then P1 and P2 as time allows. Write each fix together with a regression test (#22).
 
-**Status (2026-11-08):** #1, #2, #3, #4, #5, #6, #7, #8, #9, #10 and #17 are fixed. #14, #16, #21 and #22 are partially fixed. Each section starts with a status note describing what was done. The problem descriptions, code excerpts and line links below that note show the code as audited at `51ccc60`. Their regression tests are in `src/gtests/AuditTests.cpp` (run them with `scripts/run-audit-tests.sh` or `.ps1`). The tests still failing are those for the open items #15, #16, #18, #19 and #20. Changes from what this doc originally proposed:
+**Status (2026-11-08):** #1, #2, #3, #4, #5, #6, #7, #8, #9, #10, #11, #17 and #23 are fixed. #14, #16, #21 and #22 are partially fixed. Each section starts with a status note describing what was done. The problem descriptions, code excerpts and line links below that note show the code as audited at `51ccc60`. Their regression tests are in `src/gtests/AuditTests.cpp` (run them with `scripts/run-audit-tests.sh` or `.ps1`). The tests still failing are those for the open items #15, #16, #18, #19 and #20. Changes from what this doc originally proposed:
 - `RemoveComponent` returns `bool`.
 - `GetComponentStorageForComponentType` returns a raw pointer instead of a reference, so existing `->` call sites keep compiling.
 - `AddComponent` still behaves as add-or-retrieve instead of asserting.
@@ -285,6 +285,9 @@ Expect a large speedup in `BM_Iteration`, and in any system that touches more th
 
 ### 11. `AcceptsEntity` allocates on every call
 
+> **Status: fixed.**
+> `DynamicBitset` stores bits as `std::vector<uint64_t>` words. The new `IsSubsetOf(const DynamicBitset&) const` compares word by word with no allocation, and `EntitySystem::AcceptsEntity` uses it instead of building a temporary with `&` and comparing with `==`. `Test`, `Set`, `|=`, `&` and `==` all work a word at a time. Bits beyond the size still read as zero, and `Size()` now returns the word capacity in bits (a multiple of 64). Tests: `Audit11_Bitset.AcceptsEntityDoesNotAllocate` (counts heap allocations), `Audit11_BitsetOps.IsSubsetOf`, plus the guard test `Audit11_BitsetOps.Guard_OperatorsMatchSetSemantics`.
+
 [entitysystem.cpp:46-50](../src/lib/secs/entitysystem.cpp#L46-L50), [dynamicbitset.h](../src/lib/secs/dynamicbitset.h)
 
 `(m_neededComponents & bits) == m_neededComponents` builds a temporary `DynamicBitset` (a heap-allocated `std::vector<bool>`) and then compares it bit by bit through proxy references. This runs for every changed entity × every system each frame. `operator|` used in `ComponentBitsBuilder` has the same issue.
@@ -425,6 +428,12 @@ Build and CI:
 - Add `target_compile_features(secs PUBLIC cxx_std_17)` so consumers inherit the standard requirement.
 
 ### 23. Documentation
+
+> **Status: fixed.**
+> - `doc/SPECS.md`: goals now include reasonable performance and safety by default, and "Fast" is replaced by "Being the fastest" plus "Thread safety" as non-goals. §5.1–5.3 describe the current behaviour: immediate flags with deferred notification, freeing after notification, callback changes handled in the same step, and late systems backfilled. The truncated entity-removal sentence is completed. New §5.4 (entity handles and generations) and §5.5 (storage backends and reference stability). The table of contents numbering and the image links are fixed. A note says the diagrams show the original design.
+> - README: feature list, a usage example (compiled and run to check its output), build and test commands, and how to consume the library from CMake.
+> - Removed the `module/xstf` submodule, `.gitmodules`, `cmake/TestHelpers.cmake`, and the commented-out CMake lines that referenced them.
+> - `script/generate.sh` used to generate systems with a lowercase `process(...)` method that never overrode `TypedEntitySystem::Process`, so generated systems did nothing. It now emits `Process(...) override` plus `SECS_SYSTEM(name)`. `newcomponent` no longer overwrites an existing file (it exited without stopping before). The usage comments match the real naming. Checked by generating a system and building and running it against the library.
 
 - SPECS §4 lists "Fast" as a non-goal. The recent SparseSet backend and benchmarks contradict that. Update the stated goals.
 - SPECS §5 describes freeing components after notification, which isn't implemented (#5).

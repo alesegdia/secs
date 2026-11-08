@@ -47,8 +47,8 @@ void secs::EntitySystem::OnEntitiesChanged(const std::vector<secs::Entity> &enti
 
 bool secs::EntitySystem::AcceptsEntity(const secs::Entity& entity)
 {
-	ComponentBits &entity_component_bits = m_componentFlagsManager->GetComponentFlagsForEntity( entity );
-	return ( m_neededComponents & entity_component_bits ) == m_neededComponents;
+	const ComponentBits &entity_component_bits = m_componentFlagsManager->GetComponentFlagsForEntity( entity );
+	return m_neededComponents.IsSubsetOf( entity_component_bits );
 }
 
 void secs::EntitySystem::OnEntityAdded(const secs::Entity &)

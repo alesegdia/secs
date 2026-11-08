@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.15)
 
 project(secs)
 
-#set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 #set(EXECUTABLE_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/bin)
 #set(LIBRARY_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/lib)
 
@@ -11,8 +10,6 @@ option(BUILD_BENCHMARKS "Build Google Benchmark targets" OFF)
 
 enable_testing()
 include(CTest)
-#include(TestHelpers)
-#add_subdirectory(module/xstf)
 
 if(BUILD_GTESTS)
     find_package(GTest REQUIRED)
@@ -66,10 +63,3 @@ if(BUILD_BENCHMARKS)
         CXX_EXTENSIONS NO
     )
 endif()
-
-#file(GLOB tests RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/test/*.cpp)
-
-#foreach(test ${tests})
-#	get_filename_component(testName ${test} NAME_WE)
-#	addTests(${testName} ${test} "src/lib;module/xstf/src" "secscore;xstf")
-#endforeach()

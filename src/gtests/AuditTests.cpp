@@ -24,12 +24,50 @@
 
 #include <gtest/gtest.h>
 
+#include <atomic>
 #include <cstdlib>
 #include <memory>
+#include <new>
 #include <type_traits>
 #include <utility>
 
 #include <secs/secs.h>
+
+// ---------------------------------------------------------------------------
+// Heap allocation counter (used by #11). Replaces global operator new/delete
+// for the whole test binary; counting is only active inside AllocationScope.
+// ---------------------------------------------------------------------------
+namespace {
+std::atomic<bool> g_countAllocations{ false };
+std::atomic<int>  g_allocationCount{ 0 };
+}
+
+void* operator new(std::size_t size)
+{
+    if (g_countAllocations.load(std::memory_order_relaxed))
+    {
+        g_allocationCount.fetch_add(1, std::memory_order_relaxed);
+    }
+    if (void* p = std::malloc(size == 0 ? 1 : size))
+    {
+        return p;
+    }
+    throw std::bad_alloc();
+}
+
+void operator delete(void* p) noexcept { std::free(p); }
+void operator delete(void* p, std::size_t) noexcept { std::free(p); }
+
+namespace {
+// Counts heap allocations made between construction and Count().
+class AllocationScope
+{
+public:
+    AllocationScope()  { g_allocationCount = 0; g_countAllocations = true; }
+    ~AllocationScope() { g_countAllocations = false; }
+    int Count() const  { return g_allocationCount.load(); }
+};
+}
 
 namespace secs::audit_tests {
 
@@ -164,6 +202,12 @@ template <typename, typename = void>
 struct HasEmplaceAddComponent : std::false_type {};
 template <typename T>
 struct HasEmplaceAddComponent<T, std::void_t<decltype(std::declval<T&>().template AddComponent<Pos>(std::declval<secs::Entity>(), 1.f, 2.f))>>
+    : std::true_type {};
+
+template <typename, typename = void>
+struct HasIsSubsetOf : std::false_type {};
+template <typename T>
+struct HasIsSubsetOf<T, std::void_t<decltype(std::declval<const T&>().IsSubsetOf(std::declval<const T&>()))>>
     : std::true_type {};
 
 template <typename, typename = void>
@@ -593,6 +637,111 @@ void CheckTryGetComponent(Processor& proc)
 TEST_F(Audit09_Bounds, TryGetComponentReturnsNullForMissingComponent)
 {
     CheckTryGetComponent(proc);
+}
+
+// ===========================================================================
+// #11 — AcceptsEntity heap-allocates on every call
+// ===========================================================================
+using Audit11_Bitset = AuditFixture;
+
+TEST_F(Audit11_Bitset, AcceptsEntityDoesNotAllocate)
+{
+    auto sys = engine.CreateSystem<PosCounterSystem>();
+    secs::Entity match = proc.AddEntity();
+    secs::Entity noMatch = proc.AddEntity();
+    proc.AddComponent<Pos>(match);
+    proc.AddComponent<Vel>(match);
+    proc.AddComponent<Vel>(noMatch);
+    engine.Step(0.0);
+
+    bool acceptsMatch = false;
+    bool acceptsNoMatch = true;
+    int allocations = 0;
+    {
+        AllocationScope scope;
+        acceptsMatch = sys->AcceptsEntity(match);
+        acceptsNoMatch = sys->AcceptsEntity(noMatch);
+        allocations = scope.Count();
+    }
+
+    EXPECT_TRUE(acceptsMatch);
+    EXPECT_FALSE(acceptsNoMatch);
+    EXPECT_EQ(allocations, 0);
+}
+
+template <typename Bits>
+void CheckIsSubsetOf()
+{
+    if constexpr (HasIsSubsetOf<Bits>::value)
+    {
+        Bits empty, small, big, other;
+        small.Set(3);
+        big.Set(3);
+        big.Set(130);         // spans several 64-bit words
+        other.Set(4);
+
+        EXPECT_TRUE(empty.IsSubsetOf(empty));
+        EXPECT_TRUE(empty.IsSubsetOf(big));
+        EXPECT_TRUE(small.IsSubsetOf(big));
+        EXPECT_FALSE(big.IsSubsetOf(small));   // bit 130 is beyond small's size
+        EXPECT_FALSE(other.IsSubsetOf(big));
+        EXPECT_FALSE(small.IsSubsetOf(empty));
+
+        // A set bit that is later cleared must not count.
+        Bits cleared;
+        cleared.Set(200);
+        cleared.Clear(200);
+        EXPECT_TRUE(cleared.IsSubsetOf(empty));
+    }
+    else
+    {
+        FAIL() << "DynamicBitset::IsSubsetOf(const DynamicBitset&) const does not exist yet";
+    }
+}
+
+TEST(Audit11_BitsetOps, IsSubsetOf)
+{
+    CheckIsSubsetOf<secs::DynamicBitset>();
+}
+
+// Guard (passes today): behaviour the word-based rewrite must keep.
+TEST(Audit11_BitsetOps, Guard_OperatorsMatchSetSemantics)
+{
+    secs::DynamicBitset a, b;
+    a.Set(1); a.Set(64); a.Set(65);
+    b.Set(1); b.Set(200);
+
+    EXPECT_TRUE(a.Test(64));
+    EXPECT_FALSE(a.Test(63));
+    EXPECT_FALSE(a.Test(10000));          // out of range reads as 0
+    EXPECT_TRUE(a[65]);
+
+    secs::DynamicBitset orBits = a | b;
+    EXPECT_TRUE(orBits.Test(1));
+    EXPECT_TRUE(orBits.Test(64));
+    EXPECT_TRUE(orBits.Test(200));
+
+    secs::DynamicBitset andBits = a & b;
+    EXPECT_TRUE(andBits.Test(1));
+    EXPECT_FALSE(andBits.Test(64));
+    EXPECT_FALSE(andBits.Test(200));
+
+    secs::DynamicBitset c = a;
+    c |= b;
+    EXPECT_TRUE(c == orBits);
+
+    // Equality ignores trailing zeros / different capacities.
+    secs::DynamicBitset shortBits, longBits;
+    shortBits.Set(2);
+    longBits.Set(2);
+    longBits.Set(500);
+    longBits.Clear(500);
+    EXPECT_TRUE(shortBits == longBits);
+    EXPECT_FALSE(shortBits != longBits);
+
+    longBits.Reset();
+    EXPECT_FALSE(longBits.Test(2));
+    EXPECT_TRUE(longBits == secs::DynamicBitset());
 }
 
 // ===========================================================================
