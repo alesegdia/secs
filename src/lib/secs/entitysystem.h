@@ -3,6 +3,8 @@
 #include <list>
 #include <algorithm>
 #include <iostream>
+#include <tuple>
+#include <utility>
 
 #include "entityobserver.h"
 #include "system.h"
@@ -87,13 +89,18 @@ namespace secs
         }
 
         template <typename ComponentType>
-        ComponentType& RemoveComponent(const secs::Entity& e)
+        bool RemoveComponent(const secs::Entity& e)
         {
             return m_entityProcessor->RemoveComponent<ComponentType>(e);
         }
 
     protected:
         EntityProcessor::Ptr GetEntityProcessor();
+
+        ComponentManager::Ptr GetComponentManager()
+        {
+            return m_componentManager;
+        }
 
         template <typename ComponentType>
         ComponentType& GetComponent(const Entity& e)
@@ -168,7 +175,11 @@ namespace secs
          */
         void Process(double delta, const secs::Entity& e) final
         {
-            Process(delta, e, GetComponent<Args>(e)...);
+            if (!m_storagesCached)
+            {
+                CacheStorages();
+            }
+            ProcessWithStorages(delta, e, std::index_sequence_for<Args...>{});
         }
 
         /**
@@ -180,7 +191,22 @@ namespace secs
         virtual void Process(double delta, const secs::Entity& e, Args&... args) = 0;
 
     private:
-        ComponentManager::Ptr m_componentManager; ///< The component manager.
+        // Storage pointers are owned by the ComponentManager and never move, so they
+        // are looked up once instead of on every component access.
+        void CacheStorages()
+        {
+            m_storages = std::make_tuple(GetComponentManager()->template GetComponentStorageForComponentType<Args>()...);
+            m_storagesCached = true;
+        }
+
+        template <size_t... I>
+        void ProcessWithStorages(double delta, const secs::Entity& e, std::index_sequence<I...>)
+        {
+            Process(delta, e, std::get<I>(m_storages)->GetComponent(e)...);
+        }
+
+        std::tuple<TypedComponentStorage<Args>*...> m_storages{}; ///< Cached storage for each component type.
+        bool m_storagesCached = false;
 
     };
 

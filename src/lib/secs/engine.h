@@ -39,9 +39,9 @@ namespace secs
          */
         void Visit(EntityVisitor v)
         {
-            for (auto e : GetEntityProcessor().ValidEntities())
+            for (const Entity& e : GetEntityProcessor().ValidEntities())
             {
-                v(Entity(e));
+                v(e);
             }
         }
 
@@ -61,7 +61,8 @@ namespace secs
         }
 
         /**
-         * @brief Adds a system to the engine.
+         * @brief Adds a system to the engine. Entity systems are immediately offered every
+         *        existing entity, so systems can be added at any time.
          * @param system The system to add.
          */
         void PushSystem(System::Ptr system)
@@ -75,6 +76,13 @@ namespace secs
             }
 
             m_systemManager.PushSystem(system, entity_system);
+
+            if (nullptr != entity_system)
+            {
+                // Entities still pending addition are offered too; OnEntitiesAdded is
+                // idempotent, so the later ApplyChanges notification is harmless.
+                entity_system->OnEntitiesAdded(m_entityProcessor.ValidEntities());
+            }
         }
 
         /**
@@ -132,7 +140,7 @@ namespace secs
         template <typename ComponentType>
         ComponentType& GetComponent(const Entity& e)
         {
-            return m_componentManager.GetComponentStorageForComponentType<ComponentType>()->GetComponent(e);
+            return m_entityProcessor.GetComponent<ComponentType>(e);
         }
 
         /**
@@ -183,7 +191,7 @@ namespace secs
         template <typename T>
         bool HasComponent(const secs::Entity& e)
         {
-            return m_componentFlagsManager.HasComponent<T>(e);
+            return m_entityProcessor.HasComponent<T>(e);
         }
 
 		/**

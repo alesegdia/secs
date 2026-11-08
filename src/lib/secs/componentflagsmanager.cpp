@@ -1,12 +1,12 @@
 
-#include <iostream>
+#include <cassert>
 #include "componentflagsmanager.h"
 
 void secs::ComponentFlagsManager::ResetFlagsForEntity(const secs::Entity &entity)
 {
-	if( m_entityBits.size() < ( entity.GetEID() + 1 ) )
+	if( m_entityBits.size() <= entity.Index() )
 	{
-		m_entityBits.resize(secs::eid_t(entity.GetEID() + 1));
+		m_entityBits.resize(size_t(entity.Index()) + 1);
 	}
 	GetComponentFlagsForEntity( entity ).Reset();
 }
@@ -23,5 +23,6 @@ void secs::ComponentFlagsManager::ClearComponentFlagForEntity(const secs::Entity
 
 secs::ComponentBits &secs::ComponentFlagsManager::GetComponentFlagsForEntity(const secs::Entity &entity)
 {
-	return m_entityBits[secs::eid_t(entity.GetEID())];
+	assert( entity.Index() < m_entityBits.size() && "Unknown entity" );
+	return m_entityBits[entity.Index()];
 }

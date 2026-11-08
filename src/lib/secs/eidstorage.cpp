@@ -1,45 +1,66 @@
 
 #include "eidstorage.h"
 
+#include <algorithm>
+
 namespace secs {
 
 
-eid_t EIDStorage::Retrieve()
+Entity EIDStorage::Retrieve()
 {
-	eid_t eid;
-	if( !m_recycledEIDs.empty() )
+	Entity::index_t index;
+	if( !m_recycledIndices.empty() )
 	{
-		eid = m_recycledEIDs.top();
-		m_recycledEIDs.pop();
+		index = m_recycledIndices.back();
+		m_recycledIndices.pop_back();
 	}
 	else
 	{
-		eid = m_lastEID++;
+		index = static_cast<Entity::index_t>(m_generations.size());
+		m_generations.push_back(0);
+		m_alive.push_back(false);
 	}
-	m_validEntities.push_back(eid);
-	return eid;
+	m_alive[index] = true;
+	Entity entity(index, m_generations[index]);
+	m_validEntities.push_back(entity);
+	return entity;
 }
 
-void EIDStorage::Recycle( Entity entity )
+void EIDStorage::Recycle( const Entity& entity )
 {
+	if( !IsAlive(entity) )
+	{
+		return;
+	}
 	auto& v = m_validEntities;
-	v.erase(std::remove(v.begin(), v.end(), entity.GetEID()), v.end());
-	m_recycledEIDs.push( secs::eid_t(entity.GetEID()) );
+	v.erase(std::remove(v.begin(), v.end(), entity), v.end());
+
+	const auto index = entity.Index();
+	m_alive[index] = false;
+	m_generations[index]++;
+	m_recycledIndices.push_back(index);
+}
+
+bool EIDStorage::IsAlive(const Entity& entity) const
+{
+	if( !entity.IsValid() )
+	{
+		return false;
+	}
+	const auto index = entity.Index();
+	return index < m_generations.size()
+		&& m_alive[index]
+		&& m_generations[index] == entity.Generation();
 }
 
 eid_t EIDStorage::GetLastEID() const
 {
-	return m_lastEID;
+	return static_cast<eid_t>(m_generations.size());
 }
 
 size_t EIDStorage::GetNumRecycledEIDs() const
 {
-	return m_recycledEIDs.size();
-}
-
-const std::stack<eid_t> &EIDStorage::GetRecycledStack() const
-{
-	return m_recycledEIDs;
+	return m_recycledIndices.size();
 }
 
 }

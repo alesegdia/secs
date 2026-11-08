@@ -213,12 +213,14 @@ static void BM_MixedWorkload(benchmark::State& state, secs::StorageMode mode)
 
     for (auto _ : state)
     {
-        // Update
+        // Update (entities whose Pos was removed in a previous iteration are skipped)
         for (const auto& e : entities)
         {
-            auto& p = proc.GetComponent<Pos>(e);
-            p.x += 1.f;
-            benchmark::DoNotOptimize(p);
+            if (auto* p = proc.TryGetComponent<Pos>(e))
+            {
+                p->x += 1.f;
+                benchmark::DoNotOptimize(*p);
+            }
         }
 
         // Add Vel to first 30%

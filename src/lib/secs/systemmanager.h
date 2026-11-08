@@ -5,6 +5,7 @@
 #include "entitysystem.h"
 #include "componentflagsmanager.h"
 
+#include <array>
 #include <unordered_map>
 
 namespace secs
@@ -26,11 +27,6 @@ namespace secs
          * @param flags_manager The ComponentFlagsManager to use.
          */
         SystemManager(ComponentFlagsManager& flags_manager);
-
-        /**
-         * @brief Destructor for SystemManager.
-         */
-        ~SystemManager();
 
         // EntityObserver interface
         /**
@@ -59,7 +55,8 @@ namespace secs
         void PushSystem(secs::System::Ptr system, EntitySystem::Ptr entity_system);
 
         /**
-         * @brief Activates a system group.
+         * @brief Activates a system group. Kept for backwards compatibility: every group
+         *        in [0, MaxSystemGroups) is usable without activation.
          * @param sgi The index of the system group to activate.
          */
         void ActivateSystemGroup(SystemGroupIndex sgi);
@@ -125,7 +122,7 @@ namespace secs
 
         ComponentFlagsManager& m_flagsManager; ///< The component flags manager.
 
-        std::vector<System::Ptr>* m_systemsByGroup[MaxSystemGroups]{}; ///< Systems grouped by index.
+        std::array<std::vector<System::Ptr>, MaxSystemGroups> m_systemsByGroup; ///< Systems grouped by index.
 
     };
 

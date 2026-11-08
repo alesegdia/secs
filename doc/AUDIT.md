@@ -27,39 +27,48 @@ Findings are grouped into four tiers and sorted by priority within each tier.
 
 ## Summary table
 
-| # | Tier | Finding | Impact | Effort |
-|---|------|---------|--------|--------|
-| 1 | P0 | `TagEntity` erases **all** tags whenever a new tag is introduced | High | S |
-| 2 | P0 | Structural changes made inside system callbacks during `ApplyChanges` cause UB and are lost | High | M |
-| 3 | P0 | Component references are invalidated by later `AddComponent` calls (both backends, including inside `Process`) | High | M |
-| 4 | P0 | Calling `AddComponent` twice before `ApplyChanges` resets the data and queues duplicate edits | High | S |
-| 5 | P0 | Components are never freed (`FreeComponent` is never called), so removed data and resources linger | High | M |
-| 6 | P0 | No generation counter on entity IDs, so stale handles silently alias recycled entities | High | M |
-| 7 | P0 | Systems added after entities exist never see those entities | Medium | S |
-| 8 | P0 | `SetSystemGroup` asserts on the wrong thing and dereferences null | Medium | S |
-| 9 | P0 | `GetComponent`/`RemoveComponent` on a missing component reads out of bounds; entity count drifts | Medium | S |
-| 10 | P1 | Every `GetComponent` copies a `shared_ptr` (two atomic ops) and runs a resize check | High | S |
-| 11 | P1 | `AcceptsEntity` heap-allocates (`vector<bool>`) per entity, per system, per change | Medium | M |
-| 12 | P1 | System entity lists are `std::list` with O(n) removal | Medium | S |
-| 13 | P1 | Iteration doesn't use the packed sparse-set arrays | Medium | L |
-| 14 | P1 | Avoidable copies and O(n) operations in `EIDStorage`, `Visit`, `ApplyChanges` | Low–Med | S |
-| 15 | P2 | Two conflicting `eid_t` types (`uint32_t` vs `uint64_t`) | Medium | S |
-| 16 | P2 | Dead or broken code: `ai/` module, `ArrayComponentStorage`, `GetFlagForComponentType`, `Deactivate*` | Medium | S |
-| 17 | P2 | `HasComponent` and `GetComponent` disagree before `ApplyChanges` | Medium | S |
-| 18 | P2 | Ownership and lifetime: raw back-pointers, copyable `Engine`, no `RemoveSystem` | Medium | M |
-| 19 | P2 | Global component-type registry (not thread-safe, breaks across DLLs, wastes bit 0) | Low–Med | M |
-| 20 | P2 | Smaller API issues: no perfect forwarding, no emplace, `Pre/PostUpdate` on disabled systems, const-correctness | Low | S |
-| 21 | P3 | Missing or unused includes, leftover debug code (`fflush(0)`), inconsistent include style | Low | S |
-| 22 | P3 | Tests don't cover any of the bugs above; no CI, warnings or sanitizers | Medium | M |
-| 23 | P3 | Docs are out of date (SPECS non-goals, freeing step, unused submodule) | Low | S |
+| # | Tier | Finding | Impact | Effort | Status |
+|---|------|---------|--------|--------|--------|
+| 1 | P0 | `TagEntity` erases **all** tags whenever a new tag is introduced | High | S | ✅ Fixed |
+| 2 | P0 | Structural changes made inside system callbacks during `ApplyChanges` cause UB and are lost | High | M | ✅ Fixed |
+| 3 | P0 | Component references are invalidated by later `AddComponent` calls (both backends, including inside `Process`) | High | M | ✅ Fixed |
+| 4 | P0 | Calling `AddComponent` twice before `ApplyChanges` resets the data and queues duplicate edits | High | S | ✅ Fixed |
+| 5 | P0 | Components are never freed (`FreeComponent` is never called), so removed data and resources linger | High | M | ✅ Fixed |
+| 6 | P0 | No generation counter on entity IDs, so stale handles silently alias recycled entities | High | M | ✅ Fixed |
+| 7 | P0 | Systems added after entities exist never see those entities | Medium | S | ✅ Fixed |
+| 8 | P0 | `SetSystemGroup` asserts on the wrong thing and dereferences null | Medium | S | ✅ Fixed |
+| 9 | P0 | `GetComponent`/`RemoveComponent` on a missing component reads out of bounds; entity count drifts | Medium | S | ✅ Fixed |
+| 10 | P1 | Every `GetComponent` copies a `shared_ptr` (two atomic ops) and runs a resize check | High | S | ✅ Fixed |
+| 11 | P1 | `AcceptsEntity` heap-allocates (`vector<bool>`) per entity, per system, per change | Medium | M | Open |
+| 12 | P1 | System entity lists are `std::list` with O(n) removal | Medium | S | Open |
+| 13 | P1 | Iteration doesn't use the packed sparse-set arrays | Medium | L | Open |
+| 14 | P1 | Avoidable copies and O(n) operations in `EIDStorage`, `Visit`, `ApplyChanges` | Low–Med | S | 🟡 Partial |
+| 15 | P2 | Two conflicting `eid_t` types (`uint32_t` vs `uint64_t`) | Medium | S | Open |
+| 16 | P2 | Dead or broken code: `ai/` module, `ArrayComponentStorage`, `GetFlagForComponentType`, `Deactivate*` | Medium | S | 🟡 Partial |
+| 17 | P2 | `HasComponent` and `GetComponent` disagree before `ApplyChanges` | Medium | S | ✅ Fixed |
+| 18 | P2 | Ownership and lifetime: raw back-pointers, copyable `Engine`, no `RemoveSystem` | Medium | M | Open |
+| 19 | P2 | Global component-type registry (not thread-safe, breaks across DLLs, wastes bit 0) | Low–Med | M | Open |
+| 20 | P2 | Smaller API issues: no perfect forwarding, no emplace, `Pre/PostUpdate` on disabled systems, const-correctness | Low | S | Open |
+| 21 | P3 | Missing or unused includes, leftover debug code (`fflush(0)`), inconsistent include style | Low | S | 🟡 Partial |
+| 22 | P3 | Tests don't cover any of the bugs above; no CI, warnings or sanitizers | Medium | M | 🟡 Partial |
+| 23 | P3 | Docs are out of date (SPECS non-goals, freeing step, unused submodule) | Low | S | Open |
 
 **Suggested order:** 1 → 4 → 8 → 9 → 7 → 10 → 2 → 5 → 3 → 6, then P1 and P2 as time allows. Write each fix together with a regression test (#22).
+
+**Status (2026-11-08):** #1, #2, #3, #4, #5, #6, #7, #8, #9, #10 and #17 are fixed. #14, #16, #21 and #22 are partially fixed. Each section starts with a status note describing what was done. The problem descriptions, code excerpts and line links below that note show the code as audited at `51ccc60`. Their regression tests are in `src/gtests/AuditTests.cpp` (run them with `scripts/run-audit-tests.sh` or `.ps1`). The tests still failing are those for the open items #15, #16, #18, #19 and #20. Changes from what this doc originally proposed:
+- `RemoveComponent` returns `bool`.
+- `GetComponentStorageForComponentType` returns a raw pointer instead of a reference, so existing `->` call sites keep compiling.
+- `AddComponent` still behaves as add-or-retrieve instead of asserting.
+- For #8, groups no longer need `ActivateSystemGroup`, which is kept as a no-op.
 
 ---
 
 ## P0 — Correctness
 
 ### 1. `TagEntity` wipes every existing tag
+
+> **Status: fixed.**
+> `TagEntity` no longer clears the map and ignores duplicates. Removed entities are dropped from every tag in `ApplyChanges`. `GetAllEntitiesWithTag` returns `const std::vector<Entity>&`. Tests: `Audit01_Tags.*`.
 
 [entityprocessor.h:216-223](../src/lib/secs/entityprocessor.h#L216-L223)
 
@@ -84,6 +93,9 @@ The current test tags only one entity, so it doesn't catch this.
 ---
 
 ### 2. Structural changes inside callbacks during `ApplyChanges` cause UB and are lost
+
+> **Status: fixed.**
+> `ApplyChanges` moves the pending buffers into locals with `std::exchange` before notifying systems. It repeats until no new changes are queued, and stops at 64 passes with an assert. Tests: `Audit02_Reentrancy.*`.
 
 [entityprocessor.cpp:101-114](../src/lib/secs/entityprocessor.cpp#L101-L114)
 
@@ -114,6 +126,9 @@ Add an iteration cap with an assert to catch infinite spawn loops.
 ---
 
 ### 3. Component references are invalidated by later additions
+
+> **Status: fixed.**
+> Both backends store components in fixed pages of `ComponentPageSize` (256) that never move. SparseSet pages hold the packed dense sequence; Vector pages are addressed by entity index and allocated on demand. Adding components never invalidates references. Freeing a SparseSet component still moves the last element into the hole (documented on `TypedComponentStorage`). Tests: `Audit03_ReferenceStability.*`.
 
 [componentstorage.h:140-156](../src/lib/secs/componentstorage.h#L140-L156) (SparseSet `push_back`), [componentstorage.h:222-245](../src/lib/secs/componentstorage.h#L222-L245) (Vector `resize`), [entitysystem.h:169-172](../src/lib/secs/entitysystem.h#L169-L172)
 
@@ -148,6 +163,9 @@ Option 2 is the usual approach (EnTT uses paged storage for this reason).
 
 ### 4. Calling `AddComponent` twice before `ApplyChanges` resets the data
 
+> **Status: fixed.**
+> Flags are set and cleared immediately in `AddOrRetrieveComponent` and `RemoveComponent`; only system notification waits for `ApplyChanges`. `AddComponent` still behaves as add-or-retrieve (no assert), so existing callers keep working. Tests: `Audit04_SameFrameEdits.*`.
+
 [entityprocessor.h:107-117](../src/lib/secs/entityprocessor.h#L107-L117)
 
 `AddOrRetrieveComponent` checks `HasComponent`, which reads the *flags*. Flags are only set in `ApplyChanges`. Within one frame, a second call sees "not present", calls `AllocComponent` again (which resets the value to `{}`), and queues a duplicate edit.
@@ -164,6 +182,9 @@ The same mismatch makes `RemoveComponent` a no-op for a component added in the s
 ---
 
 ### 5. Components are never freed
+
+> **Status: fixed.**
+> `BaseComponentStorage` gained `Contains` and `FreeIfPresent`. After systems are notified, `ApplyChanges` frees removed components (unless re-added in the meantime) and all components of removed entities. The Vector backend resets the slot to `T{}`. Tests: `Audit05_ComponentFreeing.*`, including the guard test that `OnEntityRemoved` can still read the data.
 
 [componentstorage.h:171-189](../src/lib/secs/componentstorage.h#L171-L189), [entityprocessor.cpp:105-109](../src/lib/secs/entityprocessor.cpp#L105-L109)
 
@@ -183,6 +204,9 @@ This needs a type-erased `virtual void Free(const Entity&)` on `BaseComponentSto
 
 ### 6. No generation counter on entity IDs
 
+> **Status: fixed.**
+> `Entity` packs `Index()` (32 bits) and `Generation()` (32 bits). `EIDStorage` keeps per-index generations and bumps them on recycle. `EntityProcessor::IsAlive` is new. `HasComponent`, `RemoveEntity`, `RemoveComponent` and the debug asserts reject stale handles. Tests: `Audit06_Generations.*`.
+
 [eidstorage.cpp:7-28](../src/lib/secs/eidstorage.cpp#L7-L28), [entity.h](../src/lib/secs/entity.h)
 
 IDs are recycled LIFO. An `Entity` held by game code (a target, parent or owner reference) silently starts pointing at whatever entity gets that ID next. There's no way to ask "is this handle still alive?".
@@ -193,6 +217,9 @@ IDs are recycled LIFO. An `Entity` held by game code (a target, parent or owner 
 
 ### 7. Systems added after entities exist never see them
 
+> **Status: fixed.**
+> `Engine::PushSystem` calls `OnEntitiesAdded(ValidEntities())` on new entity systems. `EntitySystem::OnEntitiesAdded` is idempotent, so entities still pending addition aren't added twice. Tests: `Audit07_LateSystems.*`.
+
 [engine.h:67-78](../src/lib/secs/engine.h#L67-L78)
 
 `PushSystem` only registers the system for *future* notifications. Entities created before the system was added are never offered to it, even if they match. This is easy to hit with level loading, or systems created lazily by game state.
@@ -202,6 +229,9 @@ IDs are recycled LIFO. An `Entity` held by game code (a target, parent or owner 
 ---
 
 ### 8. `SetSystemGroup` asserts on the wrong thing
+
+> **Status: fixed.**
+> Groups are stored as `std::array<std::vector<System::Ptr>, MaxSystemGroups>`, with no manual `new`/`delete` and no destructor. Every group is usable without activation; `ActivateSystemGroup` is kept as a no-op. Indices are bounds-checked, and `SetSystemGroup` ignores duplicates. Test: `Audit08_SystemGroupsDeathTest.*`.
 
 [systemmanager.cpp:74-79](../src/lib/secs/systemmanager.cpp#L74-L79)
 
@@ -219,6 +249,9 @@ m_systemsByGroup[group]->push_back(system);      // null deref if group not acti
 
 ### 9. Out-of-bounds reads and entity count drift
 
+> **Status: fixed.**
+> Storage `GetComponent` asserts `Contains`. `RemoveComponent` returns `bool` and is a no-op when the component is missing. `TryGetComponent<T>` is new. `ComponentFlagsManager::HasComponent` is bounds-checked. `RemoveEntity` ignores dead or already-pending entities, so the count cannot drift. Tests: `Audit09_Bounds*`.
+
 - **Missing component:** `SparseSetComponentStorage::GetComponent` ([componentstorage.h:162-165](../src/lib/secs/componentstorage.h#L162-L165)) indexes `m_sparse[eid]` with no bounds check and doesn't check for `InvalidIndex`. `RemoveComponent` ([entityprocessor.h:126-134](../src/lib/secs/entityprocessor.h#L126-L134)) always returns `GetComponent(e)`, even when the entity never had the component. That is an out-of-bounds read.
   **Fix:** add `assert(Contains(e))` to `GetComponent`. Make `RemoveComponent` return `void` (or `bool`), and add a `T* TryGetComponent(e)`.
 - **Unknown entity:** `ComponentFlagsManager::GetComponentFlagsForEntity` ([componentflagsmanager.cpp:24-27](../src/lib/secs/componentflagsmanager.cpp#L24-L27)) is unchecked, so `HasComponent` on an out-of-range entity is UB.
@@ -232,6 +265,9 @@ m_systemsByGroup[group]->push_back(system);      // null deref if group not acti
 SPECS §4 lists "Fast" as a non-goal, but the recent SparseSet work and benchmarks show that performance now matters. These are the main hot-path costs.
 
 ### 10. `GetComponent` copies a `shared_ptr` on every call
+
+> **Status: fixed.**
+> `ComponentManager` owns storages as `unique_ptr` and returns `TypedComponentStorage<T>*` (a pointer rather than a reference, so `->` call sites still compile). `TypedEntitySystem` caches its storage pointers in a `std::tuple` on first `Process`. Concrete storages are `final`. Not unit-tested; check with the benchmarks.
 
 [componentmanager.h:36-76](../src/lib/secs/componentmanager.h#L36-L76), [entitysystem.h:98-102](../src/lib/secs/entitysystem.h#L98-L102)
 
@@ -277,6 +313,9 @@ engine.Each<Position, Velocity>([](Entity e, Position& p, Velocity& v) { ... });
 
 ### 14. Smaller hot-path costs
 
+> **Status: partially fixed.**
+> Done: `ValidEntities()` and `Visit` no longer copy, `ApplyChanges` uses a `std::vector` instead of `std::list`, and the recycled-ID `std::stack` is now a `std::vector`. Still open: `Recycle` is O(n), and `Visit` still takes a `std::function`.
+
 - `EIDStorage::validEntities()` ([eidstorage.h:54-57](../src/lib/secs/eidstorage.h#L54-L57)), `EntityProcessor::ValidEntities()` and `Engine::Visit` each **copy** the whole vector. Return `const std::vector<eid_t>&`.
 - `EIDStorage::Recycle` uses `erase(remove(...))`, which is O(n) per removed entity. Use a swap-and-pop sparse set, or an `alive` bitset plus lazy compaction.
 - `ApplyChanges` builds a `std::list`, sorts it, copies it into a vector, and sorts again. Collect into a `std::vector`, `sort`, then `unique` once. Better still, mark changed entities in a bitset/vector to avoid sorting.
@@ -295,6 +334,9 @@ engine.Each<Position, Velocity>([](Entity e, Position& p, Velocity& v) { ... });
 
 ### 16. Dead or broken code
 
+> **Status: partially fixed.**
+> Done: removed `ArrayComponentStorage`, the `SECS_VECTOR_STORAGE_LEGACY_GROWTH` dead path, and the shadowing `TypedEntitySystem::m_componentManager`. Still open: the `ai/` module, `GetFlagForComponentType`, `Deactivate*`, and `SECS_COMPONENT`.
+
 | Item | Location | Problem | Action |
 |------|----------|---------|--------|
 | `ai/ComponentBehaviour` | [ai/componentbehaviour.h:25-33](../src/lib/secs/ai/componentbehaviour.h#L25-L33) | `AddOrRetrieveComponent<ComponentTypes...>` fails to compile with more than one type; `save(...)` is called with the wrong arguments; compiles today only because it is never instantiated. Circular include with `secs.h`. `IComponentBehaviour` has no virtual destructor. | Remove from `secs.h`, then fix or delete |
@@ -306,6 +348,9 @@ engine.Each<Position, Velocity>([](Entity e, Position& p, Velocity& v) { ... });
 | `SECS_COMPONENT` macro, `config.h` | [system.h:7](../src/lib/secs/system.h#L7) | Unused | Delete |
 
 ### 17. `HasComponent` and `GetComponent` disagree within a frame
+
+> **Status: fixed.**
+> Fixed as part of #4: flags update immediately. Tests: `Audit04_SameFrameEdits.HasComponentIs*`.
 
 After `AddComponent<T>(e)`, `GetComponent<T>(e)` works immediately but `HasComponent<T>(e)` returns `false` until `ApplyChanges`. After `RemoveComponent`, the reverse happens. This causes #4 and is surprising to users.
 
@@ -345,6 +390,9 @@ After `AddComponent<T>(e)`, `GetComponent<T>(e)` works immediately but `HasCompo
 
 ### 21. Includes and leftovers
 
+> **Status: partially fixed.**
+> Done: added the missing `<string>`, `<cassert>` and `<limits>` includes in the files touched, and `entityprocessor.cpp` now uses a relative include. Still open: `fflush(0)`, unused `<iostream>` includes, empty translation units, `.clang-format`.
+
 - Missing includes, compiling today only through transitive includes: `<string>` in [entityprocessor.h](../src/lib/secs/entityprocessor.h), `<cassert>` in [systemmanager.cpp](../src/lib/secs/systemmanager.cpp) and [entityprocessor.h](../src/lib/secs/entityprocessor.h), `<limits>` in [componentstorage.h](../src/lib/secs/componentstorage.h), `<cstdint>` in [componenttraits.h](../src/lib/secs/componenttraits.h), `<cstdio>` for `fflush`.
 - Unused `<iostream>` in [componentmanager.h](../src/lib/secs/componentmanager.h), [entitysystem.h](../src/lib/secs/entitysystem.h), [componentflagsmanager.cpp](../src/lib/secs/componentflagsmanager.cpp). It adds compile time and static init.
 - `fflush(0);` debug leftover in [entitysystem.cpp:104](../src/lib/secs/entitysystem.cpp#L104). Also several commented-out `std::cout` lines.
@@ -353,6 +401,9 @@ After `AddComponent<T>(e)`, `GetComponent<T>(e)` works immediately but `HasCompo
 - Mixed tabs and spaces throughout. Add a `.clang-format`.
 
 ### 22. Tests, CI and warnings
+
+> **Status: partially fixed.**
+> Done: regression tests in `src/gtests/AuditTests.cpp` (run with `scripts/run-audit-tests.sh` or `.ps1`). Still open: CI, warnings, sanitizers.
 
 The test suite covers the happy paths well, but none of the P0 issues. Add a regression test with each fix:
 

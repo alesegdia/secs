@@ -1,26 +1,27 @@
-#include "secs/entityprocessor.h"
+#include "entityprocessor.h"
+
+#include <iterator>
+#include <utility>
 
 namespace secs
 {
-
-
 
 	ComponentEdit::ComponentEdit(const Entity& entity, Type type, ctindex_t index) : m_entity(entity), m_type(type), m_index(index)
 	{
 
 	}
 
-	secs::ComponentEdit::Type ComponentEdit::GetType()
+	secs::ComponentEdit::Type ComponentEdit::GetType() const
 	{
 		return m_type;
 	}
 
-	secs::ctindex_t ComponentEdit::GetIndex()
+	secs::ctindex_t ComponentEdit::GetIndex() const
 	{
 		return m_index;
 	}
 
-	const secs::Entity& ComponentEdit::GetEntity()
+	const secs::Entity& ComponentEdit::GetEntity() const
 	{
 		return m_entity;
 	}
@@ -35,6 +36,15 @@ namespace secs
 
 	void EntityProcessor::RemoveEntity(const Entity& entity)
 	{
+		if (!IsAlive(entity) || IsPendingRemoval(entity))
+		{
+			return;
+		}
+		if (entity.Index() >= m_pendingRemoval.size())
+		{
+			m_pendingRemoval.resize(size_t(entity.Index()) + 1, false);
+		}
+		m_pendingRemoval[entity.Index()] = true;
 		m_numEntities--;
 		m_removedEntities.push_back(entity);
 	}
@@ -48,7 +58,7 @@ namespace secs
 		return entity;
 	}
 
-	int EntityProcessor::GetNumEntities()
+	int EntityProcessor::GetNumEntities() const
 	{
 		return m_numEntities;
 	}
@@ -58,60 +68,77 @@ namespace secs
 		ApplyChanges();
 	}
 
+	void EntityProcessor::RemoveFromTags(const Entity& entity)
+	{
+		for (auto& [tag, entities] : m_taggedEntities)
+		{
+			entities.erase(std::remove(entities.begin(), entities.end(), entity), entities.end());
+		}
+	}
+
 	void EntityProcessor::ApplyChanges()
 	{
-		// std::cout << "Applying changes" << std::endl;
-		std::list<Entity> change_list;
-		for (ComponentEdit& edit : m_componentEdits)
+		int passes = 0;
+		while (!m_componentEdits.empty() || !m_addedEntities.empty() || !m_removedEntities.empty())
 		{
-			change_list.push_back(edit.GetEntity());
-			switch (edit.GetType())
+			passes++;
+			assert(passes <= MaxApplyPasses && "System callbacks keep producing entity changes");
+			if (passes > MaxApplyPasses)
 			{
-			case ComponentEdit::Type::AddComponent:
-				m_componentFlagsManager.SetComponentFlagForEntity(edit.GetEntity(), edit.GetIndex());
 				break;
-			case ComponentEdit::Type::RemoveComponent:
-				m_componentFlagsManager.ClearComponentFlagForEntity(edit.GetEntity(), edit.GetIndex());
-				break;
+			}
+
+			// Take ownership of this pass's changes. Callbacks below may queue new
+			// changes; those land in the (now empty) member buffers and are handled
+			// by the next pass.
+			auto edits   = std::exchange(m_componentEdits, {});
+			auto added   = std::exchange(m_addedEntities, {});
+			auto removed = std::exchange(m_removedEntities, {});
+
+			std::vector<Entity> changed;
+			changed.reserve(edits.size());
+			for (const ComponentEdit& edit : edits)
+			{
+				changed.push_back(edit.GetEntity());
+			}
+			std::sort(changed.begin(), changed.end());
+			changed.erase(std::unique(changed.begin(), changed.end()), changed.end());
+			std::sort(added.begin(), added.end());
+
+			// Created entities are announced through OnEntitiesAdded, so they are
+			// left out of the changed set.
+			std::vector<Entity> filtered_changed;
+			std::set_difference(changed.begin(), changed.end(),
+				added.begin(), added.end(),
+				std::back_inserter(filtered_changed));
+
+			m_systemManager.OnEntitiesChanged(filtered_changed);
+			m_systemManager.OnEntitiesAdded(added);
+			m_systemManager.OnEntitiesRemoved(removed);
+
+			// Systems have been notified: now free removed components, unless the
+			// component was added back in the meantime.
+			for (const ComponentEdit& edit : edits)
+			{
+				if (edit.GetType() == ComponentEdit::Type::RemoveComponent
+					&& IsAlive(edit.GetEntity())
+					&& !m_componentFlagsManager.HasComponent(edit.GetEntity(), edit.GetIndex()))
+				{
+					m_componentManager.FreeComponent(edit.GetEntity(), edit.GetIndex());
+				}
+			}
+
+			for (const Entity& entity : removed)
+			{
+				m_componentManager.FreeAllComponents(entity);
+				m_componentFlagsManager.ClearAllFlagsForEntity(entity);
+				RemoveFromTags(entity);
+				m_pendingRemoval[entity.Index()] = false;
+				m_eidStorage.Recycle(entity);
 			}
 		}
 
-		change_list.sort();
-		change_list.unique();
-
-		// remove duplicates
-		auto& v = m_removedEntities;
-		std::sort(v.begin(), v.end());
-		auto last = std::unique(v.begin(), v.end());
-		v.erase(last, v.end());
-
-		std::vector<Entity> change_vector{ std::begin(change_list), std::end(change_list) };
-		std::sort(change_vector.begin(), change_vector.end());
-		std::sort(m_addedEntities.begin(), m_addedEntities.end());
-
-		// we discard created entities from the change set because systems will already be notified
-		// from m_addedEntities. We could remove this computation from here and let the system manager to
-		// perform the difference computation, and pass all 3 sets without filtering at once
-		// SystemManager::update( changed, added, removed )
-		std::vector<Entity> filtered_change_vector;
-		std::set_difference(change_vector.begin(), change_vector.end(),
-			m_addedEntities.begin(), m_addedEntities.end(),
-			std::back_inserter(filtered_change_vector));
-
-		m_systemManager.OnEntitiesChanged(filtered_change_vector);
-		m_systemManager.OnEntitiesAdded(m_addedEntities);
-		m_systemManager.OnEntitiesRemoved(m_removedEntities);
-
-		for (auto entity : m_removedEntities)
-		{
-			m_eidStorage.Recycle(entity);
-			m_componentFlagsManager.ClearAllFlagsForEntity(entity);
-		}
-
-		m_addedEntities.clear();
-		m_removedEntities.clear();
 		m_deactivatedEntities.clear();
-		m_componentEdits.clear();
 	}
 
 }

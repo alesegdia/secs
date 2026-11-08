@@ -1,77 +1,40 @@
 #pragma once
 
-#include <vector>
 #include <cassert>
+#include <cstddef>
+#include <limits>
 #include <memory>
+#include <vector>
 
 #include "entity.h"
-#include "bits.h"
 
 namespace secs {
 
     /**
      * @class BaseComponentStorage
-     * @brief Base class for component storage.
+     * @brief Type-erased base class for component storage.
+     *
+     * Lets the engine free every component of a removed entity without knowing
+     * the component types.
      */
     class BaseComponentStorage {
     public:
 
         typedef std::unique_ptr<BaseComponentStorage> UniquePtr;
         typedef BaseComponentStorage* Ptr;
-        typedef std::shared_ptr<BaseComponentStorage> SharedPtr;
 
         virtual ~BaseComponentStorage() {}
 
-    };
-
-    /**
-     * @brief Component addition and deletion processes are split into two steps.
-     * 1) Set/clear the bit associated with the entity.
-     * 2) Allocate/free the component associated with the entity.
-     *
-     * @tparam ComponentType The type of the component.
-     */
-    template <typename ComponentType>
-    class ArrayComponentStorage : public BaseComponentStorage
-    {
-    public:
-
-        using UniquePtr = std::unique_ptr<ArrayComponentStorage<ComponentType>>;
-        using SharedPtr = std::shared_ptr<ArrayComponentStorage>;
-        using Ptr = ArrayComponentStorage<ComponentType>*;
-
-        static constexpr size_t NumEntities = 1024;
+        /**
+         * @brief Returns true if a component slot is allocated for the entity.
+         */
+        virtual bool Contains(const Entity& e) const = 0;
 
         /**
-         * @brief Allocates and returns a component for the entity passed as a parameter.
-         * Resizes the container if the entity does not fit.
-         * @param e The entity for which the component is to be allocated.
-         * @return The allocated component.
+         * @brief Frees the component slot for the entity, if any, releasing the
+         *        component's resources.
          */
-        ComponentType& AllocComponentForEntity(const Entity& e)
-        {
-            assert(e.GetEID() < ArrayComponentStorage::NumEntities);
-            m_storage[e.GetEID()] = {};
-            return m_storage[e.GetEID()];
-        }
-
-        /**
-         * @brief Retrieves the component for a given entity.
-         * @param e The entity for which the component is to be retrieved.
-         * @return A reference to the component of the specified type for the given entity.
-         */
-        ComponentType& GetComponentForEntity(const Entity& e)
-        {
-            return m_storage[e.GetEID()];
-        }
-
-    private:
-
-        /**
-         * @brief Storage for components. The container is resized when a component is
-         * requested for an entity and it does not fit.
-         */
-        ComponentType m_storage[ArrayComponentStorage::NumEntities];
+        virtual void FreeIfPresent(const Entity& e) = 0;
 
     };
 
@@ -80,13 +43,25 @@ namespace secs {
      */
     enum class StorageMode
     {
-        Vector,    ///< VectorComponentStorage — flat vector indexed by eid (legacy behaviour)
+        Vector,    ///< VectorComponentStorage — storage indexed directly by entity index
         SparseSet  ///< SparseSetComponentStorage — packed dense array + sparse index (default)
     };
 
     /**
+     * @brief Number of components per storage page. Components live in fixed-size
+     *        pages that are never reallocated, so adding components never moves
+     *        existing ones in memory.
+     */
+    static constexpr size_t ComponentPageSize = 256;
+
+    /**
      * @brief Pure-virtual typed base that unifies VectorComponentStorage and
      * SparseSetComponentStorage behind a single interface used by ComponentManager.
+     *
+     * Reference stability: a reference returned by AllocComponent/GetComponent stays
+     * valid while other components of the same type are added. Freeing a component
+     * may move another one (SparseSet swaps the last element into the hole), so do
+     * not hold references across ApplyChanges.
      *
      * @tparam ComponentType The type of the component.
      */
@@ -94,12 +69,20 @@ namespace secs {
     class TypedComponentStorage : public BaseComponentStorage
     {
     public:
-        using SharedPtr = std::shared_ptr<TypedComponentStorage<ComponentType>>;
+        using UniquePtr = std::unique_ptr<TypedComponentStorage<ComponentType>>;
         using Ptr       = TypedComponentStorage<ComponentType>*;
 
         virtual ComponentType& AllocComponent(const Entity& e) = 0;
         virtual ComponentType& GetComponent(const Entity& e)   = 0;
         virtual void           FreeComponent(const Entity& e)  = 0;
+
+        void FreeIfPresent(const Entity& e) override
+        {
+            if (this->Contains(e))
+            {
+                FreeComponent(e);
+            }
+        }
 
         /**
          * @brief Returns the number of bytes occupied by ComponentType elements
@@ -113,164 +96,206 @@ namespace secs {
      * @brief Sparse-set component storage.
      *
      * Layout:
-     *   m_sparse[eid]  → index into m_dense   (one array lookup)
-     *   m_dense[index] → the actual ComponentType value (contiguous, no gaps)
+     *   m_sparse[index] → position in the dense sequence (one array lookup)
+     *   dense[position] → the actual ComponentType value, stored in fixed-size pages
      *
      * Properties:
-     *   - O(1) random access via entity ID (1 indirection through the sparse array)
-     *   - Components live in a tightly-packed contiguous array — cache-friendly iteration
-     *   - FreeComponent swaps the removed slot with the last dense element so the
-     *     dense array stays packed with no holes.
+     *   - O(1) random access via entity index (1 indirection through the sparse array)
+     *   - Components are tightly packed (no holes) in pages of ComponentPageSize
+     *   - Pages never move, so adding components never invalidates references
+     *   - FreeComponent moves the last dense element into the freed slot so the
+     *     dense sequence stays packed.
      *
      * @tparam ComponentType The type of the component.
      */
     template <typename ComponentType>
-    class SparseSetComponentStorage : public TypedComponentStorage<ComponentType>
+    class SparseSetComponentStorage final : public TypedComponentStorage<ComponentType>
     {
     public:
         using UniquePtr = std::unique_ptr<SparseSetComponentStorage<ComponentType>>;
-        using SharedPtr = std::shared_ptr<SparseSetComponentStorage<ComponentType>>;
         using Ptr       = SparseSetComponentStorage<ComponentType>*;
 
         static constexpr size_t InvalidIndex = std::numeric_limits<size_t>::max();
+
+        bool Contains(const Entity& e) const override
+        {
+            const size_t index = e.Index();
+            return index < m_sparse.size() && m_sparse[index] != InvalidIndex;
+        }
 
         /**
          * @brief Allocates (or resets) a component slot for the given entity.
          */
         ComponentType& AllocComponent(const Entity& e) override
         {
-            const size_t eid = static_cast<size_t>(e.GetEID());
-            GrowSparse(eid);
+            const size_t index = e.Index();
+            GrowSparse(index);
 
-            if (m_sparse[eid] == InvalidIndex)
+            if (m_sparse[index] == InvalidIndex)
             {
-                m_sparse[eid] = m_dense.size();
-                m_dense.push_back({});
+                if (m_size == m_pages.size() * ComponentPageSize)
+                {
+                    m_pages.push_back(std::make_unique<ComponentType[]>(ComponentPageSize));
+                }
+                m_sparse[index] = m_size;
                 m_denseEntities.push_back(e);
+                m_size++;
             }
-            else
-            {
-                m_dense[m_sparse[eid]] = {};
-            }
-            return m_dense[m_sparse[eid]];
+            ComponentType& slot = Dense(m_sparse[index]);
+            slot = ComponentType{};
+            return slot;
         }
 
         /**
          * @brief Retrieves the component for a given entity.
-         *        One indirection: sparse[eid] → dense[index].
+         *        One indirection: sparse[index] → dense[position].
          */
         ComponentType& GetComponent(const Entity& e) override
         {
-            return m_dense[m_sparse[static_cast<size_t>(e.GetEID())]];
+            assert(Contains(e) && "Entity has no component of this type");
+            return Dense(m_sparse[e.Index()]);
         }
 
         /**
          * @brief Frees the component slot for the given entity.
-         *        Uses swap-with-last to keep the dense array packed.
+         *        Moves the last element into the hole to keep the dense array packed,
+         *        and resets the vacated slot so its resources are released.
          */
         void FreeComponent(const Entity& e) override
         {
-            const size_t eid      = static_cast<size_t>(e.GetEID());
-            assert(eid < m_sparse.size() && m_sparse[eid] != InvalidIndex);
-
-            const size_t denseIdx = m_sparse[eid];
-            const size_t lastIdx  = m_dense.size() - 1;
+            assert(Contains(e));
+            const size_t index    = e.Index();
+            const size_t denseIdx = m_sparse[index];
+            const size_t lastIdx  = m_size - 1;
 
             if (denseIdx != lastIdx)
             {
-                m_dense[denseIdx]          = std::move(m_dense[lastIdx]);
-                m_denseEntities[denseIdx]  = m_denseEntities[lastIdx];
-                m_sparse[static_cast<size_t>(m_denseEntities[denseIdx].GetEID())] = denseIdx;
+                Dense(denseIdx)           = std::move(Dense(lastIdx));
+                m_denseEntities[denseIdx] = m_denseEntities[lastIdx];
+                m_sparse[m_denseEntities[denseIdx].Index()] = denseIdx;
             }
 
-            m_dense.pop_back();
+            Dense(lastIdx) = ComponentType{};
             m_denseEntities.pop_back();
-            m_sparse[eid] = InvalidIndex;
+            m_size--;
+            m_sparse[index] = InvalidIndex;
         }
 
         /**
-         * @brief Returns bytes used by the packed dense component array (capacity).
+         * @brief Returns bytes used by the dense component pages (capacity).
          *        Does not include the sparse index or entity list overhead.
          */
         size_t AllocatedBytes() const override
         {
-            return m_dense.capacity() * sizeof(ComponentType);
+            return m_pages.size() * ComponentPageSize * sizeof(ComponentType);
         }
 
     private:
-        void GrowSparse(size_t eid)
+        ComponentType& Dense(size_t position)
         {
-            if (eid >= m_sparse.size())
-                m_sparse.resize(eid + 8, InvalidIndex);
+            return m_pages[position / ComponentPageSize][position % ComponentPageSize];
         }
 
-        std::vector<size_t>        m_sparse;        ///< sparse[eid] → index into m_dense
-        std::vector<ComponentType> m_dense;          ///< packed component values
-        std::vector<Entity>        m_denseEntities;  ///< entity at each dense slot (for swap-on-remove)
+        void GrowSparse(size_t index)
+        {
+            if (index >= m_sparse.size())
+                m_sparse.resize(index + 1, InvalidIndex);
+        }
+
+        std::vector<size_t>                           m_sparse;        ///< sparse[index] → position in dense
+        std::vector<std::unique_ptr<ComponentType[]>> m_pages;         ///< dense component pages (never move)
+        std::vector<Entity>                           m_denseEntities; ///< entity at each dense position
+        size_t                                        m_size = 0;      ///< number of live components
     };
 
-    // Make VectorComponentStorage implement TypedComponentStorage so ComponentManager
-    // can hold both backends behind the same pointer type.
+    /**
+     * @brief Storage indexed directly by entity index.
+     *
+     * Components live in pages of ComponentPageSize addressed by entity index; a page
+     * is allocated the first time an entity in its range gets a component. Pages never
+     * move, so references stay valid while other components are added or removed.
+     *
+     * @tparam ComponentType The type of the component.
+     */
     template <typename ComponentType>
-    class VectorComponentStorage : public TypedComponentStorage<ComponentType>
+    class VectorComponentStorage final : public TypedComponentStorage<ComponentType>
     {
     public:
         using UniquePtr = std::unique_ptr<VectorComponentStorage<ComponentType>>;
-        using SharedPtr = std::shared_ptr<VectorComponentStorage<ComponentType>>;
         using Ptr       = VectorComponentStorage<ComponentType>*;
+
+        bool Contains(const Entity& e) const override
+        {
+            const size_t index = e.Index();
+            return index < m_present.size() && m_present[index];
+        }
 
         ComponentType& AllocComponent(const Entity& e) override
         {
-#define SECS_VECTOR_STORAGE_LEGACY_GROWTH
-#ifdef SECS_VECTOR_STORAGE_LEGACY_GROWTH
-            // Legacy: linear growth by +32 slots each time
-            if (m_storage.size() < (e.GetEID() + 1))
-                m_storage.resize(secs::eid_t(e.GetEID() + 8));
-            m_storage[secs::eid_t(e.GetEID())] = {};
-            return m_storage[secs::eid_t(e.GetEID())];
-#else
-            // Geometric doubling starting at 64 — matches std::vector push_back semantics
-            // and provides a fair baseline for memory comparisons with SparseSetComponentStorage.
-            const auto required = static_cast<size_t>(e.GetEID()) + 1;
-            if (required > m_storage.size())
+            const size_t index = e.Index();
+            const size_t page  = index / ComponentPageSize;
+            if (page >= m_pages.size())
             {
-                size_t newCap = m_storage.capacity() < 64 ? 64ULL : m_storage.capacity() * 2;
-                while (newCap < required) newCap *= 2;
-                m_storage.reserve(newCap);
-                m_storage.resize(required);
+                m_pages.resize(page + 1);
             }
-            m_storage[static_cast<size_t>(e.GetEID())] = {};
-            return m_storage[static_cast<size_t>(e.GetEID())];
-#endif
+            if (m_pages[page] == nullptr)
+            {
+                m_pages[page] = std::make_unique<ComponentType[]>(ComponentPageSize);
+            }
+            if (index >= m_present.size())
+            {
+                m_present.resize(index + 1, false);
+            }
+            m_present[index] = true;
+
+            ComponentType& slot = Slot(index);
+            slot = ComponentType{};
+            return slot;
         }
 
         ComponentType& GetComponent(const Entity& e) override
         {
-            return m_storage[secs::eid_t(e.GetEID())];
-        }
-
-        void FreeComponent(const Entity& /*e*/) override
-        {
-            // VectorComponentStorage does not reclaim memory on remove;
-            // the slot simply becomes stale until the entity is reused.
+            assert(Contains(e) && "Entity has no component of this type");
+            return Slot(e.Index());
         }
 
         /**
-         * @brief Returns bytes used by the flat storage vector (full capacity,
-         *        including holes for unused entity slots).
+         * @brief Resets the slot so the component's resources are released. The page
+         *        itself is kept for reuse.
+         */
+        void FreeComponent(const Entity& e) override
+        {
+            assert(Contains(e));
+            const size_t index = e.Index();
+            Slot(index) = ComponentType{};
+            m_present[index] = false;
+        }
+
+        /**
+         * @brief Returns bytes used by the allocated pages (including unused slots).
          */
         size_t AllocatedBytes() const override
         {
-            return m_storage.capacity() * sizeof(ComponentType);
+            size_t pages = 0;
+            for (const auto& p : m_pages)
+            {
+                if (p != nullptr) pages++;
+            }
+            return pages * ComponentPageSize * sizeof(ComponentType);
         }
 
     private:
-        std::vector<ComponentType> m_storage;
+        ComponentType& Slot(size_t index)
+        {
+            return m_pages[index / ComponentPageSize][index % ComponentPageSize];
+        }
+
+        std::vector<std::unique_ptr<ComponentType[]>> m_pages;   ///< pages addressed by index / ComponentPageSize
+        std::vector<bool>                             m_present; ///< whether each index holds a component
     };
 
     /**
      * @brief Alias for the component storage interface type used throughout the engine.
-     *        ComponentManager holds SharedPtr<ComponentStorage<T>>.
      *
      * @tparam T The type of the component.
      */

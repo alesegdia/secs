@@ -1,6 +1,5 @@
 #pragma once
 
-#include <stack>
 #include <cstdlib>
 #include <vector>
 
@@ -12,54 +11,56 @@ namespace secs
     /**
      * @class EIDStorage
      * @brief Manages the storage and recycling of entity IDs.
+     *
+     * Each index has a generation counter that is bumped when the index is recycled,
+     * so handles to removed entities can be told apart from the entity that reuses
+     * the index (see IsAlive()).
      */
     class EIDStorage
     {
     public:
 
         /**
-         * @brief Retrieves a new entity ID.
-         * @return The new entity ID.
+         * @brief Retrieves a new entity (recycled index with a new generation, or a fresh index).
+         * @return The new entity.
          */
-        eid_t Retrieve();
+        Entity Retrieve();
 
         /**
-         * @brief Recycles an entity ID, making it available for reuse.
+         * @brief Recycles an entity's index, making it available for reuse.
+         * Does nothing if the entity is not alive.
          * @param entity The entity whose ID is to be recycled.
          */
-        void Recycle(Entity entity);
+        void Recycle(const Entity& entity);
 
         /**
-         * @brief Gets the last assigned entity ID.
-         * @return The last assigned entity ID.
+         * @brief Checks whether a handle refers to a currently alive entity.
+         */
+        bool IsAlive(const Entity& entity) const;
+
+        /**
+         * @brief Gets the number of indices handed out so far (alive or recycled).
          */
         eid_t GetLastEID() const;
 
         /**
-         * @brief Gets the number of recycled entity IDs.
-         * @return The number of recycled entity IDs.
+         * @brief Gets the number of recycled entity indices waiting for reuse.
          */
         size_t GetNumRecycledEIDs() const;
 
         /**
-         * @brief Gets the stack of recycled entity IDs.
-         * @return A reference to the stack of recycled entity IDs.
+         * @brief Gets the currently alive entities.
          */
-        const std::stack<eid_t>& GetRecycledStack() const;
-
-        /**
-         * @brief Gets a vector of valid entity IDs.
-         * @return A vector of valid entity IDs.
-         */
-        std::vector<eid_t> validEntities()
+        const std::vector<Entity>& validEntities() const
         {
             return m_validEntities;
         }
 
     private:
-        std::stack<eid_t> m_recycledEIDs; ///< Stack of recycled entity IDs.
-        std::vector<eid_t> m_validEntities; ///< Vector of valid entity IDs.
-        eid_t m_lastEID = 0; ///< The last assigned entity ID.
+        std::vector<Entity::index_t> m_recycledIndices; ///< Free list of recycled indices (used as a stack).
+        std::vector<Entity::generation_t> m_generations; ///< Current generation for each index.
+        std::vector<bool> m_alive; ///< Whether each index currently holds a live entity.
+        std::vector<Entity> m_validEntities; ///< Alive entities.
 
     };
 

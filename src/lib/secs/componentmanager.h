@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <vector>
 #include <memory>
 
@@ -11,7 +10,7 @@ namespace secs {
 
     /**
      * @brief The ComponentManager class is a proxy between users and the
-     * component storage for each component type.
+     * component storage for each component type. It owns every storage.
      */
     class ComponentManager
     {
@@ -30,37 +29,29 @@ namespace secs {
 
         /**
          * @brief Retrieves (or lazily creates) the component storage for a specific component type.
+         *        The returned pointer is never null and stays valid for the lifetime of the
+         *        ComponentManager, so callers may cache it.
          * @tparam ComponentType The type of the component.
-         * @return A shared pointer to the typed storage for the specified component type.
          */
         template <typename ComponentType>
-        typename ComponentStorage<ComponentType>::SharedPtr GetComponentStorageForComponentType()
+        TypedComponentStorage<ComponentType>* GetComponentStorageForComponentType()
         {
-            typename ComponentStorage<ComponentType>::SharedPtr component_storage;
-            auto component_index = ComponentTraits::GetIndexForComponentType<ComponentType>();
+            const auto component_index = ComponentTraits::GetIndexForComponentType<ComponentType>();
 
-            if ((component_index + 1) > m_componentStorageVector.size())
+            if (component_index >= m_componentStorageVector.size())
             {
                 m_componentStorageVector.resize(component_index + 1);
             }
 
-            if (m_componentStorageVector[component_index] == nullptr)
+            auto& slot = m_componentStorageVector[component_index];
+            if (slot == nullptr)
             {
-                std::shared_ptr<TypedComponentStorage<ComponentType>> typed_storage;
                 if (m_storageMode == StorageMode::SparseSet)
-                    typed_storage = std::make_shared<SparseSetComponentStorage<ComponentType>>();
+                    slot = std::make_unique<SparseSetComponentStorage<ComponentType>>();
                 else
-                    typed_storage = std::make_shared<VectorComponentStorage<ComponentType>>();
-
-                m_componentStorageVector[component_index] = typed_storage;
-                component_storage = typed_storage;
+                    slot = std::make_unique<VectorComponentStorage<ComponentType>>();
             }
-            else
-            {
-                component_storage = std::static_pointer_cast<TypedComponentStorage<ComponentType>>(
-                    m_componentStorageVector[component_index]);
-            }
-            return component_storage;
+            return static_cast<TypedComponentStorage<ComponentType>*>(slot.get());
         }
 
         /**
@@ -70,18 +61,43 @@ namespace secs {
          * @return A reference to the component of the specified type for the given entity.
          */
         template <typename ComponentType>
-        ComponentType& GetComponentForEntity(Entity e)
+        ComponentType& GetComponentForEntity(const Entity& e)
         {
             return GetComponentStorageForComponentType<ComponentType>()->GetComponent(e);
+        }
+
+        /**
+         * @brief Frees the component of the given type index for the entity, if present.
+         */
+        void FreeComponent(const Entity& e, ctindex_t component_index)
+        {
+            if (component_index < m_componentStorageVector.size() && m_componentStorageVector[component_index] != nullptr)
+            {
+                m_componentStorageVector[component_index]->FreeIfPresent(e);
+            }
+        }
+
+        /**
+         * @brief Frees every component the entity has, releasing their resources.
+         */
+        void FreeAllComponents(const Entity& e)
+        {
+            for (auto& storage : m_componentStorageVector)
+            {
+                if (storage != nullptr)
+                {
+                    storage->FreeIfPresent(e);
+                }
+            }
         }
 
     private:
         StorageMode m_storageMode; ///< Backend selected at construction time.
 
         /**
-         * @brief A vector that stores shared pointers to the base component storage.
+         * @brief Storage for each component type, indexed by component type index.
          */
-        std::vector<BaseComponentStorage::SharedPtr> m_componentStorageVector;
+        std::vector<BaseComponentStorage::UniquePtr> m_componentStorageVector;
 
     };
 

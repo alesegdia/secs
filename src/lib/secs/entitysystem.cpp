@@ -8,7 +8,9 @@ void secs::EntitySystem::OnEntitiesAdded(const std::vector<secs::Entity> &entiti
 {
 	for( const Entity& entity : entities )
 	{
-		if( AcceptsEntity( entity ) )
+		// Idempotent: an entity may already be present if the system was backfilled
+		// with existing entities when it was pushed (see Engine::PushSystem).
+		if( !m_entityBits.Test( entity.Index() ) && AcceptsEntity( entity ) )
 		{
 			AddEntity( entity );
 		}
@@ -19,7 +21,7 @@ void secs::EntitySystem::OnEntitiesRemoved(const std::vector<secs::Entity> &enti
 {
 	for( const Entity& entity : entities )
 	{
-		if( m_entityBits[secs::eid_t(entity.GetEID())] )
+		if( m_entityBits.Test( entity.Index() ) )
 		{
 			RemoveEntity( entity );
 		}
@@ -30,7 +32,7 @@ void secs::EntitySystem::OnEntitiesChanged(const std::vector<secs::Entity> &enti
 {
 	for( const Entity& entity : entities )
 	{
-		bool already_present = m_entityBits.Test(secs::eid_t(entity.GetEID()) );
+		bool already_present = m_entityBits.Test( entity.Index() );
 		bool system_accept = AcceptsEntity( entity );
 		if( already_present && !system_accept )
 		{
@@ -98,7 +100,7 @@ secs::EntityProcessor::Ptr secs::EntitySystem::GetEntityProcessor()
 
 void secs::EntitySystem::RemoveEntity(const secs::Entity &entity)
 {
-	size_t pos = size_t(entity.GetEID());
+	size_t pos = size_t(entity.Index());
 	m_entityBits.Set( pos, false );
 	m_activeEntities.erase( std::remove( m_activeEntities.begin(), m_activeEntities.end(), entity ), m_activeEntities.end() );
     OnEntityRemoved( entity );fflush(0);
@@ -106,7 +108,7 @@ void secs::EntitySystem::RemoveEntity(const secs::Entity &entity)
 
 void secs::EntitySystem::AddEntity(const secs::Entity &entity)
 {
-	size_t pos = size_t(entity.GetEID());
+	size_t pos = size_t(entity.Index());
     m_entityBits.Set( pos, true );
     m_activeEntities.push_back( entity );
 	OnEntityAdded( entity );

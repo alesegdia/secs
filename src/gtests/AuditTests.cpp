@@ -381,6 +381,22 @@ TEST_P(Audit05_ComponentFreeing, RemoveEntityReleasesResources)
     EXPECT_EQ(handle.use_count(), 1);
 }
 
+// Removing and re-adding a component in the same frame must keep the new
+// component: the deferred free of the removed one must not destroy it.
+TEST_P(Audit05_ComponentFreeing, RemoveThenReAddInSameFrameKeepsNewComponent)
+{
+    secs::Entity e = proc.AddEntity();
+    proc.AddComponent<Hp>(e).hp = 1;
+    proc.ForceApplyChanges();
+
+    proc.RemoveComponent<Hp>(e);
+    proc.AddComponent<Hp>(e).hp = 2;
+    proc.ForceApplyChanges();
+
+    ASSERT_TRUE(proc.HasComponent<Hp>(e));
+    EXPECT_EQ(proc.GetComponent<Hp>(e).hp, 2);
+}
+
 // Guard (passes today): SPECS §5 says components are freed *after* systems
 // are notified, so OnEntityRemoved must still be able to read them. A fix
 // for #5 that frees before notifying would break this.
@@ -428,6 +444,15 @@ void CheckIsAlive(Processor& proc)
 
         EXPECT_FALSE(proc.IsAlive(stale));
         EXPECT_TRUE(proc.IsAlive(fresh));
+
+        // Operations through the stale handle must not touch the new entity.
+        proc.template AddComponent<Pos>(fresh);
+        proc.ForceApplyChanges();
+        EXPECT_FALSE(proc.template HasComponent<Pos>(stale));
+        proc.RemoveEntity(stale);
+        proc.ForceApplyChanges();
+        EXPECT_TRUE(proc.IsAlive(fresh));
+        EXPECT_TRUE(proc.template HasComponent<Pos>(fresh));
     }
     else
     {
@@ -450,6 +475,19 @@ TEST_F(Audit07_LateSystems, SystemCreatedAfterEntitiesProcessesThem)
     secs::Entity e = proc.AddEntity();
     proc.AddComponent<Pos>(e);
     engine.Step(0.0);
+
+    auto sys = engine.CreateSystem<PosCounterSystem>();
+    engine.Step(0.0);
+
+    EXPECT_EQ(sys->processCount, 1);
+}
+
+// The backfill also sees entities still pending addition; the later
+// ApplyChanges notification must not add them to the system a second time.
+TEST_F(Audit07_LateSystems, SystemCreatedBeforeApplyProcessesEntityOnce)
+{
+    secs::Entity e = proc.AddEntity();
+    proc.AddComponent<Pos>(e);
 
     auto sys = engine.CreateSystem<PosCounterSystem>();
     engine.Step(0.0);

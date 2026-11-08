@@ -20,7 +20,7 @@ namespace secs
         typedef ComponentFlagsManager* Ptr;
 
         /**
-         * @brief Resets all component flags for a given entity.
+         * @brief Resets all component flags for a given entity, growing storage if needed.
          * @param entity The entity whose flags are to be reset.
          */
         void ResetFlagsForEntity(const Entity& entity);
@@ -41,15 +41,25 @@ namespace secs
 
         /**
          * @brief Checks if a given entity has a specific component.
-         * @tparam ComponentType The type of the component to check.
-         * @param entity The entity to check.
-         * @return True if the entity has the component, false otherwise.
+         * @return True if the entity has the component, false otherwise (including
+         *         for entities the manager has never seen).
          */
         template <typename ComponentType>
-        bool HasComponent(const Entity& entity)
+        bool HasComponent(const Entity& entity) const
         {
-            ctindex_t component_index = ComponentTraits::GetIndexForComponentType<ComponentType>();
-            return GetComponentFlagsForEntity(entity)[component_index];
+            return HasComponent(entity, ComponentTraits::GetIndexForComponentType<ComponentType>());
+        }
+
+        /**
+         * @brief Checks if a given entity has the component with the given type index.
+         */
+        bool HasComponent(const Entity& entity, ctindex_t component_index) const
+        {
+            if (!entity.IsValid() || entity.Index() >= m_entityBits.size())
+            {
+                return false;
+            }
+            return m_entityBits[entity.Index()].Test(component_index);
         }
 
         /**
@@ -65,11 +75,14 @@ namespace secs
          */
         void ClearAllFlagsForEntity(const Entity& entity)
         {
-            m_entityBits[secs::eid_t(entity.GetEID())].Reset();
+            if (entity.Index() < m_entityBits.size())
+            {
+                m_entityBits[entity.Index()].Reset();
+            }
         }
 
     private:
-		// The component flags for each entity.
+		// The component flags for each entity index.
         std::vector<ComponentBits> m_entityBits;
 
     };
